@@ -24,10 +24,13 @@ module.exports = {
         allowNull: false
       },
       category_id: {
-        type: Sequelize.DataTypes.STRING,
+        type: Sequelize.DataTypes.INTEGER,
         allowNull: false,
-        unique: true
-      }
+      },
+
+      createdAt: Sequelize.DataTypes.DATE,
+      updatedAt: Sequelize.DataTypes.DATE,
+      deletedAt: Sequelize.DataTypes.DATE,
     });
 
   },

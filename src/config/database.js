@@ -1,6 +1,13 @@
+<<<<<<< HEAD
 const dotenv = require('dotenv')
 dotenv.config()
 
+=======
+const dotenv = require('dotenv') 
+dotenv.config()
+
+
+>>>>>>> issue-create-news
 module.exports = {
     "development": {
         "username": process.env.DB_USER,

@@ -4,11 +4,7 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     class Wallet extends Model {
-        /**
-         * Helper method for defining associations.
-         * This method is not a part of Sequelize lifecycle.
-         * The `models/index` file will call this method automatically.
-         */
+        
         static associate(models) {
             Wallet.belongsTo(models.user,{
                 foreignKey: 'userId',
@@ -16,16 +12,38 @@ module.exports = (sequelize, DataTypes) => {
         }
     }
     Wallet.init({
-      
-      id: DataTypes.INTEGER,
-      coinId: DataTypes.INTEGER,
-      userId: DataTypes.INTEGER,
-      balance: DataTypes.FLOAT,
-      adress: DataTypes.STRING,
-      createdAt: DataTypes.DATE,
-      updatedAt: DataTypes.DATE,
-      deletedAt: DataTypes.DATE
-
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true
+          },
+    
+          coinId: {
+            type: DataTypes.INTEGER,
+            unique: true,
+            allowNull: false
+          },
+    
+          userId: {
+            type: DataTypes.INTEGER,
+            unique: true,
+            allowNull: false
+          },
+    
+          balance: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+          },
+    
+          adress: {
+            type: DataTypes.STRING,
+            allowNull: false
+          },
+    
+          createdAt: DataTypes.DATE,
+          updatedAt: DataTypes.DATE,
+          deletedAt: DataTypes.DATE
+          
       } , {
         sequelize,
         modelName: 'Wallet',

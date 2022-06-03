@@ -23,6 +23,13 @@ module.exports = {
       seen: {
         type: Sequelize.DataTypes.INTEGER,
       },
+
+      userId: {
+        type: Sequelize.DataTypes.INTEGER,
+        unique: false,
+        allowNull: false
+      },
+
       createdAt: {
         allowNull: false,
         type: Sequelize.DataTypes.DATE

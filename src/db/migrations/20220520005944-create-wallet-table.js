@@ -11,7 +11,7 @@ module.exports = {
 
       coinId: {
         type: Sequelize.DataTypes.INTEGER,
-        unique: true,
+        unique: false,
         allowNull: false
       },
 

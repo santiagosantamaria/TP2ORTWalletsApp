@@ -13,6 +13,30 @@ module.exports = {
       adress: randBitcoinAddress(),
       createdAt: new Date,
       updatedAt: new Date
+    },
+    {
+      coinId: 2,
+      userId: 1,
+      balance: 30,
+      adress: randBitcoinAddress(),
+      createdAt: new Date,
+      updatedAt: new Date
+    },
+    {
+      coinId: 1,
+      userId: 2,
+      balance: 80,
+      adress: randBitcoinAddress(),
+      createdAt: new Date,
+      updatedAt: new Date
+    },
+    {
+      coinId: 2,
+      userId: 2,
+      balance: 0,
+      adress: randBitcoinAddress(),
+      createdAt: new Date,
+      updatedAt: new Date
     }
     ],{} );
 

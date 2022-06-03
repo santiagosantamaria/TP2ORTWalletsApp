@@ -17,7 +17,7 @@ module.exports = {
 
       userId: {
         type: Sequelize.DataTypes.INTEGER,
-        unique: true,
+        unique: false,
         allowNull: false
       },
 

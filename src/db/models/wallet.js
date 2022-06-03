@@ -7,8 +7,10 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             Wallet.belongsTo(models.User,{
                 foreignKey: 'userId',
-            })
-            
+            }),
+            Wallet.hasOne(models.Coin,{
+              foreignKey: 'coinId',
+          })
         }
     }
     Wallet.init({

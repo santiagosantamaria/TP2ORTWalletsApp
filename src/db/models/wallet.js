@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'userId',
             }),
             Wallet.hasOne(models.Coin,{
-              foreignKey: 'coinId',
+              foreignKey: 'id',
           })
         }
     }
@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     
           userId: {
             type: DataTypes.INTEGER,
-            unique: true,
+            unique: false,
             allowNull: false
           },
     

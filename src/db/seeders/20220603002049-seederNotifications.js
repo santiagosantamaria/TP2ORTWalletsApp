@@ -11,6 +11,7 @@ module.exports = {
         text: "Este es el texto de la notificacion " + i,
         date: new Date,
         seen: 0,
+        userId: 2,
         createdAt: new Date,
         updatedAt: new Date
       }

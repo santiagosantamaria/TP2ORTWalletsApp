@@ -57,9 +57,41 @@ app.post('/users/register', async function(req,res) {
             password: password
           });
         newUser.save();
-        res.status(201).send();
+        res.status(201).send('Usuario Registrado');
     } catch(err) {
-        res.status(500).send();
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
+
+// update a user 
+app.put('/users/update/:id', async function(req,res) {
+    const { firstName, lastName, email, password } = req.body;
+    const userId = req.params.id;
+    try {
+        await User.update({
+            firstName: firstName, 
+            lastName: lastName, 
+            email: email, 
+            password: password
+          },{ 
+              where:{ id:userId } 
+            });
+        res.status(201).send('Usuario Actualizado');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
+
+// delete a user by id // asociations not checked 
+app.delete('/users/delete/:id', async function(req,res) {
+    const userId = req.params.id;
+    try {
+        await User.destroy({ 
+              where:{ id:userId } 
+            });
+        res.status(201).send('Usuario Borrado');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
     }
 })
 

@@ -14,18 +14,10 @@ app.get('/', function (req,res) {
     res.send('hola')
 })
 
-app.get('/listwallets', async function(req,res) {
-	const wallets = await Wallet.findAll();
-    return res.send(wallets);
-})
+
 
 // get user wallets 
-app.get('/getonewallet/:id', async function(req,res) {
-    const userId = req.params.id;
-    const user = await User.findByPk(userId);
-    const wallet = await user.getWallets();
-    return res.send(wallet);
-})
+
 
 app.get('/listcoins', async function(req,res) {
 	const coins = await Coin.findAll();
@@ -113,6 +105,69 @@ app.post('/users/login', async function(req,res) {
 })
 
 /* ---- END USERS -------------------------------------------------------- */
+/* ---- BEGIN WALLET -------------------------------------------------------- */
 
 
+/*list wallets*/
+app.get('/listwallets', async function(req,res) {
+	const wallets = await Wallet.findAll();
+    return res.send(wallets);
+})
+
+/*get wallet by id*/
+app.get('/getonewallet/:id', async function(req,res) {
+    const userId = req.params.id;
+    const user = await User.findByPk(userId);
+    const wallet = await user.getWallets();
+    return res.send(wallet);
+})
+
+/* add wallet */
+app.post('/wallets/new', async function(req,res) {
+    const { coinId, userId, balance, adress } = req.body;
+    try {
+        let newWallet = await Wallet.build({
+            coinId: coinId, 
+            userId: userId, 
+            balance: balance, 
+            adress: adress,
+          });
+          newWallet.save();
+        res.status(201).send('Wallet Registrada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
+
+app.put('/wallets/update/:id', async function(req,res) {
+    const { coinId, userId, balance, adress } = req.body;
+    const walletId = req.params.id;
+    try {
+        await Wallet.update({
+            coinId: coinId, 
+            userId: userId, 
+            balance: balance, 
+            adress: adress,
+          },{ 
+              where:{ id:walletId } 
+            });
+        res.status(201).send('Wallet Actualizada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
+
+app.delete('/wallets/delete/:id', async function(req,res) {
+    const walletId = req.params.id;
+    try {
+        await Wallet.destroy({ 
+              where:{ id:walletId } 
+            });
+        res.status(201).send('Wallet Borrada / se fue a cero');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
+})
+
+/* ---- END WALLET -------------------------------------------------------- */
 app.listen(5555);

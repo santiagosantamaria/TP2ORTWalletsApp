@@ -225,19 +225,13 @@ app.post('/coins/buy', isAuth, async function(req,res) {
     let userIdBuscado = req.session.userId;
 
 
-    //console.log(userWallets);
-
    try {
        const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinUsdt.id }});
        const walletCoin = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToBuy.id }});
-        // const walletUsdt = userWallets.find(wallet => wallet.ticker === 'USDT');
-        // const walletCoin = userWallets.find(wallet => wallet.ticker === tickerSearch);
 
          let netPrice = coinToBuy.unitDolarPrice * quantity;
          let resString = "";
-        //console.log(walletUsdt);
-        //console.log(walletCoin);
-        console.log(walletUsdt.balance);
+        
         if (walletUsdt.balance >= netPrice) {
             
             walletUsdt.balance = walletUsdt.balance - netPrice;
@@ -252,12 +246,44 @@ app.post('/coins/buy', isAuth, async function(req,res) {
         }
        res.status(201).send(resString);
 
-        // ¿Como hacer una res que sea para cuando el saldo es insuficiente pero el metodo corrio correctamente?
+    } catch(err) {
+       res.status(500).send('No se pudo realizar la operacion');
+    }
+    
+})
+
+app.post('/coins/sell', isAuth, async function(req,res) {
+    const { tickerSearch, quantity } = req.body;
+
+    let coinToSell = await Coin.findOne({ where: { ticker: tickerSearch }});
+    let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' }});
+    let userIdBuscado = req.session.userId;
+
+   try {
+       const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinUsdt.id }});
+       const walletCoin = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToSell.id }});
+
+         let netPay = coinToSell.unitDolarPrice * quantity;
+         let resString = "";
+
+        if (walletCoin.balance >= quantity) {
+            
+            walletUsdt.balance += netPay;
+           await walletUsdt.save();
+
+           walletCoin.balance -= quantity;
+           await walletCoin.save();
+
+           resString = 'Vendiste ' + quantity + ' ' + tickerSearch + ' por ' + netPay + ' USDT';
+        } else {
+           resString = 'No tienes suficiente esa cantidad de ' + tickerSearch;
+        }
+       res.status(201).send(resString);
+
     } catch(err) {
        res.status(500).send('No se pudo realizar la operacion');
     }
 
-    
 })
 
 /* METODOS JS -----------------------------------------------------------------------------------------------*/

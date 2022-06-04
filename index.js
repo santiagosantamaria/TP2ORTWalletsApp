@@ -220,25 +220,31 @@ app.post('/coins/buy', isAuth, async function(req,res) {
     const { tickerSearch, quantity } = req.body;
 
     let coinToBuy = await Coin.findOne({ where: { ticker: tickerSearch }});
+    let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' }});
     let userIdBuscado = req.session.userId;
 
-   try {
-       const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, ticker:"USDT" }});
-       const walletCoin = await Wallet.findOne({ where: { userId:userIdBuscado, ticker:"BTC" }});
-        
-       let netPrice = coinToBuy.price * quantity;
 
-       // console.log(walletUsdt);
-        //console.log(walletCoin);
+    //console.log(userWallets);
+
+   try {
+       const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToBuy.id }});
+       const walletCoin = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinUsdt.id }});
+        // const walletUsdt = userWallets.find(wallet => wallet.ticker === 'USDT');
+        // const walletCoin = userWallets.find(wallet => wallet.ticker === tickerSearch);
+
+         let netPrice = coinToBuy.price * quantity;
+
+        console.log(walletUsdt);
+        console.log(walletCoin);
     
         if (walletUsdt.balance >= netPrice) {
             walletUsdt.balance = walletUsdt.balance - netPrice;
-           //await walletUsdt.save();
+           await walletUsdt.save();
 
             walletCoin.balance = walletCoin.balance + quantity;
-           //await walletCoin.save();
+           await walletCoin.save();
         }
-        res.status(201).send('Compra realizada');
+       res.status(201).send('Compra realizada');
     } catch(err) {
        res.status(500).send('No se pudo realizar la operacion');
     }

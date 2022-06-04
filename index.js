@@ -81,7 +81,7 @@ app.post('/users/register', async function(req,res) {
                         coinId: tableCoinId,
                         userId: userId,
                         balance: 0, 
-                        // todo crate randon address
+                        // to do: generate randon address
                         adress: 'xXxxxXxxxXxx',
                       });
                       newWallet.save();

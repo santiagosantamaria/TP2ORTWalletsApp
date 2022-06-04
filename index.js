@@ -1,9 +1,25 @@
-const express = require("express");
-constexpress = require('express')
+const express = require('express');
+const session = require('express-session');
 const app = express();
 
+
 // accept json in post request
-app.use(express.json())
+app.use(express.json());
+app.use(
+    session({
+        secret:"Secret_Key",
+        resave:false,
+        saveUninitialized: false
+    })
+)
+
+const isAuth = (req,res,next) => {
+    if(req.session.isAuth) {
+        next()
+    } else {
+        res.status(500).send('Usuario No Logueado')        
+    }
+}
 
 const { Coin, User, Wallet } = require('./src/db/models');
 
@@ -15,9 +31,7 @@ app.get('/', function (req,res) {
 })
 
 
-
 // get user wallets 
-
 
 app.get('/listcoins', async function(req,res) {
 	const coins = await Coin.findAll();
@@ -41,6 +55,11 @@ app.get('/users/find/:id', async function(req,res) {
 // sending params via post json
 app.post('/users/register', async function(req,res) {
     const { firstName, lastName, email, password } = req.body;
+    
+    let user = await User.findOne({email});
+    if(user) {
+        res.status(201).send('Ya existe un usuario con ese email');
+    }
     try {
         let newUser = await User.build({
             firstName: firstName, 
@@ -96,7 +115,10 @@ app.post('/users/login', async function(req,res) {
         if( user == null) {
             return res.status(400).send('Usuario no encontrado');
         }
-    
+        
+        req.session.isAuth = true;
+        req.session.userId = user.id;
+        
         res.status(201).send('Login Ok');
     
         } catch (error) {
@@ -104,7 +126,27 @@ app.post('/users/login', async function(req,res) {
         }
 })
 
+app.post('/users/logout', async function(req,res) {
+    req.session.isAuth = false;
+    req.session.userId = null;
+    res.status(201).send('Logout Ok');
+})
+
+/*list user wallets*/
+app.get('/listUserWallets', isAuth, async function(req,res) {
+	const userId = req.session.userId;
+    
+    const wallets = await Wallet.findAll({ 
+            where:{ 
+                userId:userId 
+            }
+    });
+    return res.send(wallets);
+})
+
+
 /* ---- END USERS -------------------------------------------------------- */
+
 /* ---- BEGIN WALLET -------------------------------------------------------- */
 
 

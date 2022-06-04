@@ -212,4 +212,40 @@ app.delete('/wallets/delete/:id', async function(req,res) {
 })
 
 /* ---- END WALLET -------------------------------------------------------- */
+
+/* ---- BEGIN TRANSACTIONS -------------------------------------------------------- 
+*/
+
+app.post('/coins/buy', isAuth, async function(req,res) {
+    const { tickerSearch, quantity } = req.body;
+
+    let coinToBuy = await Coin.findOne({ where: { ticker: tickerSearch }});
+    let userIdBuscado = req.session.userId;
+
+   try {
+       const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, ticker:"USDT" }});
+       const walletCoin = await Wallet.findOne({ where: { userId:userIdBuscado, ticker:"BTC" }});
+        
+       let netPrice = coinToBuy.price * quantity;
+
+       // console.log(walletUsdt);
+        //console.log(walletCoin);
+    
+        if (walletUsdt.balance >= netPrice) {
+            walletUsdt.balance = walletUsdt.balance - netPrice;
+           //await walletUsdt.save();
+
+            walletCoin.balance = walletCoin.balance + quantity;
+           //await walletCoin.save();
+        }
+        res.status(201).send('Compra realizada');
+    } catch(err) {
+       res.status(500).send('No se pudo realizar la operacion');
+    }
+
+    
+})
+
+
+
 app.listen(5555);

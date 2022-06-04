@@ -63,12 +63,32 @@ app.post('/users/register', async function(req,res) {
             res.status(201).send('Ya existe un usuario con ese email');
          } else {
             let newUser = await User.build({
-                firstName: firstName,   
+                firstName: firstName,
                 lastName: lastName, 
                 email: email, 
                 password: password
               });
-            newUser.save();
+            
+            newUser.save().then(async function() {
+                let user = await User.findOne({ where:{ email:email }});
+                let userId = user.id;
+                let allCoins = await Coin.findAll();                
+                // creating an empty wallet for the User, with every Coin
+                allCoins.forEach( 
+                    (coin) => { 
+                      let tableCoinId = coin.dataValues.id;
+                      let newWallet = Wallet.build({
+                        coinId: tableCoinId,
+                        userId: userId,
+                        balance: 0, 
+                        // todo crate randon address
+                        adress: 'xXxxxXxxxXxx',
+                      });
+                      newWallet.save();
+                    }
+                  );
+                
+            });
             
             res.status(201).send('Usuario Creado');
          }  

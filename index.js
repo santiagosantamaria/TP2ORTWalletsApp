@@ -55,22 +55,26 @@ app.get('/users/find/:id', async function(req,res) {
 // sending params via post json
 app.post('/users/register', async function(req,res) {
     const { firstName, lastName, email, password } = req.body;
-    
-    let user = await User.findOne({email});
-    if(user) {
-        res.status(201).send('Ya existe un usuario con ese email');
-    }
+    console.log(email)
     try {
-        let newUser = await User.build({
-            firstName: firstName, 
-            lastName: lastName, 
-            email: email, 
-            password: password
-          });
-        newUser.save();
-        res.status(201).send('Usuario Registrado');
+        let user = await User.findOne({ where:{ email:email }});
+        
+        if(user) {
+            res.status(201).send('Ya existe un usuario con ese email');
+         } else {
+            let newUser = await User.build({
+                firstName: firstName,   
+                lastName: lastName, 
+                email: email, 
+                password: password
+              });
+            newUser.save();
+            
+            res.status(201).send('Usuario Creado');
+         }  
+            
     } catch(err) {
-        res.status(500).send('No se pudo realizar la operacion')
+        res.status(500).send('No se pudo realizar la operacion');
     }
 })
 

@@ -228,24 +228,31 @@ app.post('/coins/buy', isAuth, async function(req,res) {
     //console.log(userWallets);
 
    try {
-       const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToBuy.id }});
-       const walletCoin = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinUsdt.id }});
+       const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinUsdt.id }});
+       const walletCoin = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToBuy.id }});
         // const walletUsdt = userWallets.find(wallet => wallet.ticker === 'USDT');
         // const walletCoin = userWallets.find(wallet => wallet.ticker === tickerSearch);
 
-         let netPrice = coinToBuy.price * quantity;
-
-        console.log(walletUsdt);
-        console.log(walletCoin);
-    
+         let netPrice = coinToBuy.unitDolarPrice * quantity;
+         let resString = "";
+        //console.log(walletUsdt);
+        //console.log(walletCoin);
+        console.log(walletUsdt.balance);
         if (walletUsdt.balance >= netPrice) {
+            
             walletUsdt.balance = walletUsdt.balance - netPrice;
            await walletUsdt.save();
 
-            walletCoin.balance = walletCoin.balance + quantity;
+           walletCoin.balance = walletCoin.balance + quantity;
            await walletCoin.save();
+
+           resString = 'Compraste ' + quantity + ' ' + tickerSearch;
+        } else {
+           resString = 'No tienes suficiente dinero para comprar ' + quantity + ' ' + tickerSearch;
         }
-       res.status(201).send('Compra realizada');
+       res.status(201).send(resString);
+
+        // ¿Como hacer una res que sea para cuando el saldo es insuficiente pero el metodo corrio correctamente?
     } catch(err) {
        res.status(500).send('No se pudo realizar la operacion');
     }

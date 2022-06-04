@@ -213,8 +213,9 @@ app.delete('/wallets/delete/:id', async function(req,res) {
 
 /* ---- END WALLET -------------------------------------------------------- */
 
-/* ---- BEGIN TRANSACTIONS -------------------------------------------------------- 
-*/
+/* ---- BEGIN TRANSACTIONS --------------------------------------------------------*/
+
+
 
 app.post('/coins/buy', isAuth, async function(req,res) {
     const { tickerSearch, quantity } = req.body;
@@ -252,6 +253,13 @@ app.post('/coins/buy', isAuth, async function(req,res) {
     
 })
 
+/* METODOS JS -----------------------------------------------------------------------------------------------*/
 
+const getCoinIdByTicker = async function(ticker) {
+    
+    let coinSearchedByTicker = await Coin.findOne({ where: { ticker: ticker }});
+    
+    return coinSearchedByTicker.id;
+}
 
 app.listen(5555);

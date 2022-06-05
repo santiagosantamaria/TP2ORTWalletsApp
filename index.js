@@ -236,4 +236,85 @@ app.delete('/wallets/delete/:id', async function(req,res) {
 })
 
 /* ---- END WALLET -------------------------------------------------------- */
+
+/* ---- BEGIN TRANSACTIONS --------------------------------------------------------*/
+
+app.post('/coins/buy', isAuth, async function(req,res) {
+    const { tickerSearch, quantity } = req.body;
+
+    let coinToBuy = await Coin.findOne({ where: { ticker: tickerSearch }});
+    let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' }});
+    let userIdBuscado = req.session.userId;
+
+
+   try {
+       const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinUsdt.id }});
+       const walletCoin = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToBuy.id }});
+
+         let netPrice = coinToBuy.unitDolarPrice * quantity;
+         let resString = "";
+        
+        if (walletUsdt.balance >= netPrice) {
+            
+            walletUsdt.balance = walletUsdt.balance - netPrice;
+           await walletUsdt.save();
+
+           walletCoin.balance = walletCoin.balance + quantity;
+           await walletCoin.save();
+
+           resString = 'Compraste ' + quantity + ' ' + tickerSearch;
+        } else {
+           resString = 'No tienes suficiente dinero para comprar ' + quantity + ' ' + tickerSearch;
+        }
+       res.status(201).send(resString);
+
+    } catch(err) {
+       res.status(500).send('No se pudo realizar la operacion');
+    }
+    
+})
+
+app.post('/coins/sell', isAuth, async function(req,res) {
+    const { tickerSearch, quantity } = req.body;
+
+    let coinToSell = await Coin.findOne({ where: { ticker: tickerSearch }});
+    let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' }});
+    let userIdBuscado = req.session.userId;
+
+   try {
+       const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinUsdt.id }});
+       const walletCoin = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToSell.id }});
+
+         let netPay = coinToSell.unitDolarPrice * quantity;
+         let resString = "";
+
+        if (walletCoin.balance >= quantity) {
+            
+            walletUsdt.balance += netPay;
+           await walletUsdt.save();
+
+           walletCoin.balance -= quantity;
+           await walletCoin.save();
+
+           resString = 'Vendiste ' + quantity + ' ' + tickerSearch + ' por ' + netPay + ' USDT';
+        } else {
+           resString = 'No tienes suficiente esa cantidad de ' + tickerSearch;
+        }
+       res.status(201).send(resString);
+
+    } catch(err) {
+       res.status(500).send('No se pudo realizar la operacion');
+    }
+
+})
+
+/* METODOS JS -----------------------------------------------------------------------------------------------*/
+
+const getCoinIdByTicker = async function(ticker) {
+    
+    let coinSearchedByTicker = await Coin.findOne({ where: { ticker: ticker }});
+    
+    return coinSearchedByTicker.id;
+}
+
 app.listen(5555);

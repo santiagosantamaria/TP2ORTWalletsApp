@@ -345,6 +345,55 @@ app.post('/coins/swap', isAuth, async function(req,res) {
 
 })
 
+app.post('/coins/deposit', isAuth, async function(req,res) {
+    const { adress, quantity } = req.body;
+    let resString = "";
+    
+   try {
+        let depositWallet = await Wallet.findOne({ where: { adress: adress }});
+        
+        if(depositWallet != null) {
+            let depositCoin = await Coin.findOne({ where: { id: depositWallet.coinId}})
+            
+            depositWallet.balance += quantity;
+            await depositWallet.save();
+
+            resString = 'Depositaste ' + quantity + ' ' + depositCoin.ticker;
+        } else {
+            resString = 'No existe la wallet';
+        }
+       
+        res.status(201).send(resString);
+    } catch(err) {
+       res.status(500).send('No se pudo realizar la operacion');
+    }
+
+})
+
+app.post('/coins/withdraw', isAuth, async function(req,res) {
+    const { adress, ticker, quantity } = req.body;
+    let resString = "";
+    let userId = req.session.userId;
+
+   try {
+        let withdrawCoin = await Coin.findOne({ where: { ticker: ticker}})
+        let withdrawWallet = await Wallet.findOne({ where: { coinId: withdrawCoin.id, userId: userId }});
+
+        if(withdrawWallet != null && withdrawWallet.balance >= quantity) {
+            withdrawWallet.balance -= quantity;
+            await withdrawWallet.save();
+            resString = 'Retiraste ' + quantity + ' ' + ticker + " a la direccion " + adress + ". Balance: " + withdrawWallet.balance;
+        } else {
+            resString = 'No tienes esa cantidad de ' + ticker;
+        }
+
+        res.status(201).send(resString);
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
+
+})
+
 
 //END TRANSACTION
 

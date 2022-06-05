@@ -1,6 +1,7 @@
-const express = require('express');
-const session = require('express-session');
-const app = express();
+const express = require("express");
+constexpress= require('express')
+
+const app =express();
 
 
 // accept json in post request
@@ -17,11 +18,11 @@ const isAuth = (req,res,next) => {
     if(req.session.isAuth) {
         next()
     } else {
-        res.status(500).send('Usuario No Logueado')        
+        res.status(500).send('Usuario No Logueado')
     }
 }
 
-const { Coin, User, Wallet } = require('./src/db/models');
+const { Coin, User, Wallet, Notification } = require('./src/db/models');
 
 //http://localhost:5555/
 
@@ -31,7 +32,7 @@ app.get('/', function (req,res) {
 })
 
 
-// get user wallets 
+// get user wallets
 
 app.get('/listcoins', async function(req,res) {
 	const coins = await Coin.findAll();
@@ -58,58 +59,58 @@ app.post('/users/register', async function(req,res) {
     console.log(email)
     try {
         let user = await User.findOne({ where:{ email:email }});
-        
+
         if(user) {
             res.status(201).send('Ya existe un usuario con ese email');
          } else {
             let newUser = await User.build({
                 firstName: firstName,
-                lastName: lastName, 
-                email: email, 
+                lastName: lastName,
+                email: email,
                 password: password
               });
-            
+
             newUser.save().then(async function() {
                 let user = await User.findOne({ where:{ email:email }});
                 let userId = user.id;
-                let allCoins = await Coin.findAll();                
+                let allCoins = await Coin.findAll();
                 // creating an empty wallet for the User, with every Coin
-                allCoins.forEach( 
-                    (coin) => { 
+                allCoins.forEach(
+                    (coin) => {
                       let tableCoinId = coin.dataValues.id;
                       let newWallet = Wallet.build({
                         coinId: tableCoinId,
                         userId: userId,
-                        balance: 0, 
+                        balance: 0,
                         // to do: generate randon address
                         adress: 'xXxxxXxxxXxx',
                       });
                       newWallet.save();
                     }
                   );
-                
+
             });
-            
+
             res.status(201).send('Usuario Creado');
-         }  
-            
+         }
+
     } catch(err) {
         res.status(500).send('No se pudo realizar la operacion');
     }
 })
 
-// update a user 
+// update a user
 app.put('/users/update/:id', async function(req,res) {
     const { firstName, lastName, email, password } = req.body;
     const userId = req.params.id;
     try {
         await User.update({
-            firstName: firstName, 
-            lastName: lastName, 
-            email: email, 
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
             password: password
-          },{ 
-              where:{ id:userId } 
+          },{
+              where:{ id:userId }
             });
         res.status(201).send('Usuario Actualizado');
     } catch(err) {
@@ -117,12 +118,12 @@ app.put('/users/update/:id', async function(req,res) {
     }
 })
 
-// delete a user by id // asociations not checked 
+// delete a user by id // asociations not checked
 app.delete('/users/delete/:id', async function(req,res) {
     const userId = req.params.id;
     try {
-        await User.destroy({ 
-              where:{ id:userId } 
+        await User.destroy({
+              where:{ id:userId }
             });
         res.status(201).send('Usuario Borrado');
     } catch(err) {
@@ -135,16 +136,16 @@ app.post('/users/login', async function(req,res) {
     const { email, password } = req.body;
     try {
         const user = await User.findOne({ where: { email, password }})
-    
+
         if( user == null) {
             return res.status(400).send('Usuario no encontrado');
         }
-        
+
         req.session.isAuth = true;
         req.session.userId = user.id;
-        
+
         res.status(201).send('Login Ok');
-    
+
         } catch (error) {
             res.status(500).send();
         }
@@ -159,10 +160,10 @@ app.post('/users/logout', async function(req,res) {
 /*list user wallets*/
 app.get('/listUserWallets', isAuth, async function(req,res) {
 	const userId = req.session.userId;
-    
-    const wallets = await Wallet.findAll({ 
-            where:{ 
-                userId:userId 
+
+    const wallets = await Wallet.findAll({
+            where:{
+                userId:userId
             }
     });
     return res.send(wallets);
@@ -193,9 +194,9 @@ app.post('/wallets/new', async function(req,res) {
     const { coinId, userId, balance, adress } = req.body;
     try {
         let newWallet = await Wallet.build({
-            coinId: coinId, 
-            userId: userId, 
-            balance: balance, 
+            coinId: coinId,
+            userId: userId,
+            balance: balance,
             adress: adress,
           });
           newWallet.save();
@@ -210,12 +211,12 @@ app.put('/wallets/update/:id', async function(req,res) {
     const walletId = req.params.id;
     try {
         await Wallet.update({
-            coinId: coinId, 
-            userId: userId, 
-            balance: balance, 
+            coinId: coinId,
+            userId: userId,
+            balance: balance,
             adress: adress,
-          },{ 
-              where:{ id:walletId } 
+          },{
+              where:{ id:walletId }
             });
         res.status(201).send('Wallet Actualizada');
     } catch(err) {
@@ -226,8 +227,8 @@ app.put('/wallets/update/:id', async function(req,res) {
 app.delete('/wallets/delete/:id', async function(req,res) {
     const walletId = req.params.id;
     try {
-        await Wallet.destroy({ 
-              where:{ id:walletId } 
+        await Wallet.destroy({
+              where:{ id:walletId }
             });
         res.status(201).send('Wallet Borrada / se fue a cero');
     } catch(err) {
@@ -253,9 +254,9 @@ app.post('/coins/buy', isAuth, async function(req,res) {
 
          let netPrice = coinToBuy.unitDolarPrice * quantity;
          let resString = "";
-        
+
         if (walletUsdt.balance >= netPrice) {
-            
+
             walletUsdt.balance = walletUsdt.balance - netPrice;
            await walletUsdt.save();
 
@@ -271,7 +272,7 @@ app.post('/coins/buy', isAuth, async function(req,res) {
     } catch(err) {
        res.status(500).send('No se pudo realizar la operacion');
     }
-    
+
 })
 
 app.post('/coins/sell', isAuth, async function(req,res) {
@@ -289,7 +290,7 @@ app.post('/coins/sell', isAuth, async function(req,res) {
          let resString = "";
 
         if (walletCoin.balance >= quantity) {
-            
+
             walletUsdt.balance += netPay;
            await walletUsdt.save();
 
@@ -308,13 +309,35 @@ app.post('/coins/sell', isAuth, async function(req,res) {
 
 })
 
+
+//END TRANSACTION
+
+//------BEGIN NOTIFICATION ------
+
+app.get('/notifications', async function (req,res){
+    let notifications = await Notification.findAll()
+    return res.send(notifications)
+})
+
+//get user notifications
+app.get('/getusernotification', async function (req,res){
+    const john = await User.findByPk(2);
+    const notification = await john.getNotifications();
+
+    return res.send(notification)
+})
+
+//------END NOTIFICATION---------
+
 /* METODOS JS -----------------------------------------------------------------------------------------------*/
 
 const getCoinIdByTicker = async function(ticker) {
-    
+
     let coinSearchedByTicker = await Coin.findOne({ where: { ticker: ticker }});
-    
+
     return coinSearchedByTicker.id;
 }
+
+
 
 app.listen(5555);

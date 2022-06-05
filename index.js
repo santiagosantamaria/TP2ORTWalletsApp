@@ -1,5 +1,6 @@
 const express = require("express");
 const session = require('express-session');
+const { randBitcoinAddress } = require('@ngneat/falso');
 constexpress= require('express')
 
 const app =express();
@@ -83,8 +84,7 @@ app.post('/users/register', async function(req,res) {
                         coinId: tableCoinId,
                         userId: userId,
                         balance: 0,
-                        // to do: generate randon address
-                        adress: 'xXxxxXxxxXxx',
+                        adress: randBitcoinAddress(),
                       });
                       newWallet.save();
                     }

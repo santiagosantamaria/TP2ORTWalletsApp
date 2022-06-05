@@ -300,7 +300,42 @@ app.post('/coins/sell', isAuth, async function(req,res) {
 
            resString = 'Vendiste ' + quantity + ' ' + tickerSearch + ' por ' + netPay + ' USDT';
         } else {
-           resString = 'No tienes suficiente esa cantidad de ' + tickerSearch;
+           resString = 'No tienes esa cantidad de ' + tickerSearch;
+        }
+       res.status(201).send(resString);
+
+    } catch(err) {
+       res.status(500).send('No se pudo realizar la operacion');
+    }
+
+})
+
+app.post('/coins/swap', isAuth, async function(req,res) {
+    const { tickerSell, tickerBuy, quantity } = req.body;
+
+    let coinToSell = await Coin.findOne({ where: { ticker: tickerSell }});
+    let coinToBuy = await Coin.findOne({ where: { ticker: tickerBuy }});
+    let userIdBuscado = req.session.userId;
+
+   try {
+        const walletSell = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToSell.id }});
+        const walletBuy = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToBuy.id }});
+        let resString = "";
+
+        
+        if (walletSell.balance >= quantity) {
+
+           let netUsdt = quantity * coinToSell.unitDolarPrice;
+           walletSell.balance = walletSell.balance - quantity;         
+           let quantityCoin = netUsdt/coinToBuy.unitDolarPrice;
+           walletBuy.balance = walletBuy.balance + quantityCoin;
+
+           await walletSell.save();
+           await walletBuy.save();
+
+           resString = 'Vendiste ' + quantity + ' ' + tickerSell + ' por ' + quantityCoin + tickerBuy;
+        } else {
+           resString = 'No tienes esa cantidad de ' + tickerSell;
         }
        res.status(201).send(resString);
 

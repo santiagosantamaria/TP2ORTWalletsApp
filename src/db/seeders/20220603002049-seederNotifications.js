@@ -29,6 +29,6 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    return queryInterface.dropTable('wallets');
+    await queryInterface.bulkDelete('Notification', null, {});
   }
 };

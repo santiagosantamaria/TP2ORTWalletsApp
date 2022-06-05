@@ -36,6 +36,6 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('news', null, {});
+    await queryInterface.dropTable('news');
   }
 };

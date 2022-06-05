@@ -34,7 +34,7 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('Coins', null, {});
+    await queryInterface.dropTable('Coins');
   }
   
 };

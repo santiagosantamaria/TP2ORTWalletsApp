@@ -373,7 +373,7 @@ app.post('/coins/deposit', isAuth, async function(req,res) {
 app.post('/coins/withdraw', isAuth, async function(req,res) {
     const { adress, ticker, quantity } = req.body;
     let resString = "";
-    let userId = req.session.userId;
+    let userId = req.session.userId; 
 
    try {
         let withdrawCoin = await Coin.findOne({ where: { ticker: ticker}})
@@ -393,6 +393,46 @@ app.post('/coins/withdraw', isAuth, async function(req,res) {
     }
 
 })
+//  NO FUNCIONA ARREGLAR
+app.post('/coins/send', isAuth, async function(req,res) {
+    const { mail, ticker, quantity } = req.body;
+    let resString = "";
+    let userLoggedId = req.session.userId;
+
+   try {
+        let withdrawCoin = await Coin.findOne({ where: { ticker: ticker}});
+        let withdrawWallet = await Wallet.findOne({ where: { coinId: withdrawCoin.id, userId: userLoggedId }});
+       
+        let userToSend = await User.findOne({ where: { mail: mail}});
+        let userToSendWallet = await Wallet.findOne({ where: { coinId: withdrawCoin.id, userId: userToSend.id }});
+        console.log("-----------------------------------")
+        console.log(userToSendWallet);
+        console.log(withdrawWallet);
+        console.log(userToSend);
+
+        if(withdrawWallet.balance >= quantity && userToSend != null) {
+            withdrawWallet.balance -= quantity;
+            userToSendWallet.balance += quantity;
+
+            await withdrawWallet.save();
+            await userToSendWallet.save();
+            resString = 'Enviaste ' + quantity + ' ' + ticker + " a " + mail + ". Balance: " + withdrawWallet.balance;
+        } else if (userToSend != null) {
+            resString = 'No tienes esa cantidad de ' + ticker;
+        } else {
+            resString = 'No existe el usuario';
+        }
+        res.status(201).send(resString);
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
+//  NO FUNCIONA ARREGLAR
+})
+
+
+
+
+
 
 
 //END TRANSACTION

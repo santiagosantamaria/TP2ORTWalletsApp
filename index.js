@@ -393,40 +393,41 @@ app.post('/coins/withdraw', isAuth, async function(req,res) {
     }
 
 })
-//  NO FUNCIONA ARREGLAR
-app.post('/coins/send', isAuth, async function(req,res) {
-    const { mail, ticker, quantity } = req.body;
-    let resString = "";
+
+//  send coins to a user with email
+// bug - resString not workin with res.status()
+app.post('/coins/sendToEmail', isAuth, async function(req,res) {
+    const { email, ticker, quantity } = req.body;
     let userLoggedId = req.session.userId;
-
-   try {
-        let withdrawCoin = await Coin.findOne({ where: { ticker: ticker}});
-        let withdrawWallet = await Wallet.findOne({ where: { coinId: withdrawCoin.id, userId: userLoggedId }});
-       
-        let userToSend = await User.findOne({ where: { mail: mail}});
-        let userToSendWallet = await Wallet.findOne({ where: { coinId: withdrawCoin.id, userId: userToSend.id }});
-        console.log("-----------------------------------")
-        console.log(userToSendWallet);
-        console.log(withdrawWallet);
-        console.log(userToSend);
-
+    
+    try {
+        
+        let coin = await Coin.findOne({ where: { ticker: ticker}});
+        let withdrawWallet = await Wallet.findOne({ where: { coinId: coin.id, userId: userLoggedId }});
+        
+        let userToSend = await User.findOne({ where: { email: email}});
+        let userToSendWallet = await Wallet.findOne({ where: { coinId: coin.id, userId: userToSend.id }});
+        
         if(withdrawWallet.balance >= quantity && userToSend != null) {
-            withdrawWallet.balance -= quantity;
-            userToSendWallet.balance += quantity;
-
+            
+            withdrawWallet.balance = withdrawWallet.balance - quantity;
+            userToSendWallet.balance = userToSendWallet.balance + quantity;
+            
             await withdrawWallet.save();
             await userToSendWallet.save();
-            resString = 'Enviaste ' + quantity + ' ' + ticker + " a " + mail + ". Balance: " + withdrawWallet.balance;
-        } else if (userToSend != null) {
-            resString = 'No tienes esa cantidad de ' + ticker;
+            
+            let resString = 'Enviaste ' + quantity + ' ' + ticker + " a " + email + ". Balance: " + withdrawWallet.balance;
+             
         } else {
-            resString = 'No existe el usuario';
+            res.status(201).send("No se pudo realizar la operacion");    
         }
+        
         res.status(201).send(resString);
+        
     } catch(err) {
-        res.status(500).send('No se pudo realizar la operacion');
+        res.status(500).send(err.error);
     }
-//  NO FUNCIONA ARREGLAR
+
 })
 
 

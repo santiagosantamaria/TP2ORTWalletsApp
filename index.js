@@ -54,6 +54,17 @@ app.get('/users/find/:id', async function(req,res) {
     return res.send(user);
 })
 
+app.get('/users/profile',isAuth, async function(req,res) {
+	const userId = req.session.userId;
+    const user = await User.findByPk(userId);
+    const viewData = {
+        "Full Name": user.firstName + ' ' + user.lastName,
+        "Email": user.email,
+        "Member Since": user.createdAt
+    }
+    return res.send(viewData);
+})
+
 // sending params via post json
 app.post('/users/register', async function(req,res) {
     const { firstName, lastName, email, password } = req.body;

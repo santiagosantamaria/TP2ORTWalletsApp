@@ -1,9 +1,8 @@
-const express = require("express");
+const express = require('express');
 const session = require('express-session');
 const { randBitcoinAddress } = require('@ngneat/falso');
-constexpress= require('express')
 
-const app =express();
+const app = express();
 
 
 // accept json in post request

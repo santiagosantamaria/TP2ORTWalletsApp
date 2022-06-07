@@ -23,7 +23,15 @@ const isAuth = (req,res,next) => {
     }
 }
 
-const { Coin, User, Wallet, Notification } = require('./src/db/models');
+const isAdmin = (req,res,next) => {
+    if(req.session.isAdmin) {
+        next()
+    } else {
+        res.status(500).send('Usuario No Autorizado')
+    }
+}
+
+const { Coin, User, Wallet, Notification, Admin } = require('./src/db/models');
 
 //http://localhost:5555/
 
@@ -130,7 +138,7 @@ app.put('/users/update/:id', async function(req,res) {
 })
 
 // delete a user by id // asociations not checked
-app.delete('/users/delete/:id', async function(req,res) {
+app.delete('/users/delete/:id', isAdmin, async function(req,res) {
     const userId = req.params.id;
     try {
         await User.destroy({
@@ -154,6 +162,14 @@ app.post('/users/login', async function(req,res) {
 
         req.session.isAuth = true;
         req.session.userId = user.id;
+        req.session.isAdmin = false;
+
+        // check if user is admin
+        const admin = await Admin.findOne({ where: { userId:user.id }})
+        if( admin !== null) {
+            req.session.isAdmin = true;
+            console.log("user is Admin !!")
+        }
 
         res.status(201).send('Login Ok');
 
@@ -235,7 +251,7 @@ app.put('/wallets/update/:id', async function(req,res) {
     }
 })
 
-app.delete('/wallets/delete/:id', async function(req,res) {
+app.delete('/wallets/delete/:id', isAdmin, async function(req,res) {
     const walletId = req.params.id;
     try {
         await Wallet.destroy({

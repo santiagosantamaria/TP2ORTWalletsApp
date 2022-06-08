@@ -11,7 +11,7 @@ describe('Index Response',() => {
             .then((res)=>{
                 assert.equal(res.status,201);
             }).catch(err => {
-                assert.equal(err.response.status, 422)
+                assert.equal(err.res.status, 422)
             })
     });
 })
@@ -22,7 +22,7 @@ describe('List All Users Response',() => {
             .then((res)=>{
                 assert.equal(res,res);
             }).catch(err => {
-                assert.equal(err.response.status, 422)
+                assert.equal(err.res.status, 422)
             })
     });
 })

@@ -420,6 +420,42 @@ app.post('/coins/withdraw', isAuth, async function(req,res) {
 
 })
 
+//  send coins to a user with email
+// bug - resString not workin with res.status()
+app.post('/coins/sendToEmail', isAuth, async function(req,res) {
+    const { email, ticker, quantity } = req.body;
+    let userLoggedId = req.session.userId;
+    
+    try {
+        
+        let coin = await Coin.findOne({ where: { ticker: ticker}});
+        let withdrawWallet = await Wallet.findOne({ where: { coinId: coin.id, userId: userLoggedId }});
+        
+        let userToSend = await User.findOne({ where: { email: email}});
+        let userToSendWallet = await Wallet.findOne({ where: { coinId: coin.id, userId: userToSend.id }});
+        
+        if(withdrawWallet.balance >= quantity && userToSend != null) {
+            
+            withdrawWallet.balance = withdrawWallet.balance - quantity;
+            userToSendWallet.balance = userToSendWallet.balance + quantity;
+            
+            await withdrawWallet.save();
+            await userToSendWallet.save();
+            
+            let resString = 'Enviaste ' + quantity + ' ' + ticker + " a " + email + ". Balance: " + withdrawWallet.balance;
+             
+        } else {
+            res.status(201).send("No se pudo realizar la operacion");    
+        }
+        
+        res.status(201).send(resString);
+        
+    } catch(err) {
+        res.status(500).send(err.error);
+    }
+
+})
+
 
 //END TRANSACTION
 

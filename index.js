@@ -471,6 +471,7 @@ app.get('/notifications/notificationsfromlogged', isAuth, async function (req,re
     const userId = req.session.userId;
 
     const user = await User.findByPk(userId);
+    console.log("TODAS LAS WALLETS DE ESTE USUARIO " + allWallets)
     const notification = await user.getNotifications();
 
     return res.send(notification)
@@ -478,7 +479,7 @@ app.get('/notifications/notificationsfromlogged', isAuth, async function (req,re
 
 //new notification
 // sending params via post json
-app.post('/notifications/newnotification', isAuth, async  function (req, res){
+app.post('/notifications/newnotification', async  function (req, res){
    console.log('METODO NEW NOTIFICATION')
     const {title, text, userId} = req.body;
     console.log('TITULO ' + title);
@@ -489,13 +490,11 @@ app.post('/notifications/newnotification', isAuth, async  function (req, res){
         if(user == null){
             res.status(500).send('No se encontro a un usuario con ese id');
         }else{
-            let newNotification = await Notification.build({title: title, text: text, userId:userId, seen: 0}) //COMO LE PASO LA FECHA?
+            let newNotification = await Notification.create({title: title, text: text, userId:userId, seen: 0}) //COMO LE PASO LA FECHA?
             console.log(newNotification)
 
-           //  await newNotification.save(); No se pudo realizar la operacion SequelizeValidationError: notNull Violation: Notification.date cannot be null
 
         }
-
         res.status(201).send('NOTIFICACION CREADA');
 
     }catch (err){
@@ -525,6 +524,8 @@ app.get('/transactions', async function (req,res){
     return res.send(transactions)
 })
 
+
+
 //---------------------------------------END TRANSACTIONS-----------------------------------
 
 /* METODOS JS -----------------------------------------------------------------------------------------------*/
@@ -535,6 +536,8 @@ const getCoinIdByTicker = async function(ticker) {
 
     return coinSearchedByTicker.id;
 }
+
+
 
 
 

@@ -16,20 +16,14 @@ module.exports = {
         type: Sequelize.DataTypes.STRING,
         allowNull: false
       },
-      date: {
-        type: Sequelize.DataTypes.DATE,
-        allowNull: false
-      },
       seen: {
         type: Sequelize.DataTypes.INTEGER,
       },
-
       userId: {
         type: Sequelize.DataTypes.INTEGER,
         unique: false,
         allowNull: false
       },
-
       createdAt: {
         allowNull: false,
         type: Sequelize.DataTypes.DATE
@@ -42,6 +36,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Notifications');
+    await queryInterface.dropTable('notifications');
   }
 };

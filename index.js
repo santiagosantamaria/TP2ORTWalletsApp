@@ -467,7 +467,7 @@ app.get('/notifications', async function (req,res){
 })
 
 //get user notifications (logged user)
-app.get('/getusernotification', isAuth, async function (req,res){
+app.get('/notifications/notificationsfromlogged', isAuth, async function (req,res){
     const userId = req.session.userId;
 
     const user = await User.findByPk(userId);
@@ -476,17 +476,76 @@ app.get('/getusernotification', isAuth, async function (req,res){
     return res.send(notification)
 })
 
-/*
+// sending params via post json
+app.post('/notifications/newnotification', isAuth, async  function (req, res){
+   console.log('METODO NEW NOTIFICATION')
+    const {title, text, userId} = req.body;
+    console.log('TITULO ' + title);
+    try{
+        let user = await User.findOne({ where:{ id:userId }});
+        console.log('USUARIO BUSCADO ' + user.firstName)
 
-app.get('/listUserWallets', isAuth, async function(req,res) {
-    const userId = req.session.userId;
+        if(user == null){
+            res.status(500).send('No se encontro a un usuario con ese id');
+        }else{
+            let newNotification = await Notification.build({title: title, text: text, userId:userId, seen: 0}) //COMO LE PASO LA FECHA?
+            console.log(newNotification)
 
-    const wallets = await Wallet.findAll({
-        where:{
-            userId:userId
+           //  await newNotification.save(); No se pudo realizar la operacion SequelizeValidationError: notNull Violation: Notification.date cannot be null
+
         }
-    });
-    return res.send(wallets);
+
+        res.status(201).send('NOTIFICACION CREADA');
+
+    }catch (err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+})
+
+/*
+// sending params via post json
+app.post('/users/register', async function(req,res) {
+    const { firstName, lastName, email, password } = req.body;
+    console.log(email)
+    try {
+        let user = await User.findOne({ where:{ email:email }});
+
+        if(user) {
+            res.status(201).send('Ya existe un usuario con ese email');
+         } else {
+            let newUser = await User.build({
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: password
+              });
+
+            newUser.save().then(async function() {
+                let user = await User.findOne({ where:{ email:email }});
+                let userId = user.id;
+                let allCoins = await Coin.findAll();
+                // creating an empty wallet for the User, with every Coin
+                allCoins.forEach(
+                    (coin) => {
+                      let tableCoinId = coin.dataValues.id;
+                      let newWallet = Wallet.build({
+                        coinId: tableCoinId,
+                        userId: userId,
+                        balance: 0,
+                        adress: randBitcoinAddress(),
+                      });
+                      newWallet.save();
+                    }
+                  );
+
+            });
+
+            res.status(201).send('Usuario Creado');
+         }
+
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
 })
  */
 

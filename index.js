@@ -476,6 +476,7 @@ app.get('/notifications/notificationsfromlogged', isAuth, async function (req,re
     return res.send(notification)
 })
 
+//new notification
 // sending params via post json
 app.post('/notifications/newnotification', isAuth, async  function (req, res){
    console.log('METODO NEW NOTIFICATION')
@@ -502,52 +503,18 @@ app.post('/notifications/newnotification', isAuth, async  function (req, res){
     }
 })
 
-/*
-// sending params via post json
-app.post('/users/register', async function(req,res) {
-    const { firstName, lastName, email, password } = req.body;
-    console.log(email)
+app.delete('/notifications/delete/:id', async function(req,res) {
+    const notificationId = req.params.id;
     try {
-        let user = await User.findOne({ where:{ email:email }});
-
-        if(user) {
-            res.status(201).send('Ya existe un usuario con ese email');
-         } else {
-            let newUser = await User.build({
-                firstName: firstName,
-                lastName: lastName,
-                email: email,
-                password: password
-              });
-
-            newUser.save().then(async function() {
-                let user = await User.findOne({ where:{ email:email }});
-                let userId = user.id;
-                let allCoins = await Coin.findAll();
-                // creating an empty wallet for the User, with every Coin
-                allCoins.forEach(
-                    (coin) => {
-                      let tableCoinId = coin.dataValues.id;
-                      let newWallet = Wallet.build({
-                        coinId: tableCoinId,
-                        userId: userId,
-                        balance: 0,
-                        adress: randBitcoinAddress(),
-                      });
-                      newWallet.save();
-                    }
-                  );
-
-            });
-
-            res.status(201).send('Usuario Creado');
-         }
-
+        await Notification.destroy({
+            where:{ id:notificationId }
+        });
+        res.status(201).send('Notificacion Borrada del sistema');
     } catch(err) {
         res.status(500).send('No se pudo realizar la operacion');
     }
 })
- */
+
 
 //------END NOTIFICATION---------
 

@@ -4,11 +4,13 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     class Wallet extends Model {
-        
         static associate(models) {
-            Wallet.belongsTo(models.user,{
+            Wallet.belongsTo(models.User,{
                 foreignKey: 'userId',
-            })
+            }),
+            Wallet.hasOne(models.Coin,{
+              foreignKey: 'id',
+          })
         }
     }
     Wallet.init({
@@ -26,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     
           userId: {
             type: DataTypes.INTEGER,
-            unique: true,
+            unique: false,
             allowNull: false
           },
     

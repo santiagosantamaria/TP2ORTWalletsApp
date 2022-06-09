@@ -11,13 +11,13 @@ module.exports = {
 
       coinId: {
         type: Sequelize.DataTypes.INTEGER,
-        unique: true,
+        unique: false,
         allowNull: false
       },
 
       userId: {
         type: Sequelize.DataTypes.INTEGER,
-        unique: true,
+        unique: false,
         allowNull: false
       },
 
@@ -42,6 +42,7 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    return queryInterface.dropTable('wallets');
+    await queryInterface.dropTable('wallets');
+    
   }
 };

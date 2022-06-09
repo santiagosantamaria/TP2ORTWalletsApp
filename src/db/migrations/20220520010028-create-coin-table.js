@@ -34,7 +34,7 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    return queryInterface.dropTable('Coins');
+    await queryInterface.dropTable('Coins');
   }
   
 };

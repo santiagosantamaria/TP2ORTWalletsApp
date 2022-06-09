@@ -456,23 +456,39 @@ app.post('/coins/sendToEmail', isAuth, async function(req,res) {
 
 })
 
-
 //END TRANSACTION
 
 //------BEGIN NOTIFICATION ------
 
+//LIST ALL NOTIFICATIONS
 app.get('/notifications', async function (req,res){
     let notifications = await Notification.findAll()
     return res.send(notifications)
 })
 
-//get user notifications
-app.get('/getusernotification', async function (req,res){
-    const john = await User.findByPk(2);
-    const notification = await john.getNotifications();
+//get user notifications (logged user)
+app.get('/getusernotification', isAuth, async function (req,res){
+    const userId = req.session.userId;
+
+    const user = await User.findByPk(userId);
+    const notification = await user.getNotifications();
 
     return res.send(notification)
 })
+
+/*
+
+app.get('/listUserWallets', isAuth, async function(req,res) {
+    const userId = req.session.userId;
+
+    const wallets = await Wallet.findAll({
+        where:{
+            userId:userId
+        }
+    });
+    return res.send(wallets);
+})
+ */
 
 //------END NOTIFICATION---------
 

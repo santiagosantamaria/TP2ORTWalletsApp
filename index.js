@@ -423,7 +423,6 @@ app.post('/coins/withdraw', isAuth, async function(req,res) {
 })
 
 //  send coins to a user with email
-// bug - resString not workin with res.status()
 app.post('/coins/sendToEmail', isAuth, async function(req,res) {
     const { email, ticker, quantity } = req.body;
     let userLoggedId = req.session.userId;
@@ -488,7 +487,7 @@ const getCoinIdByTicker = async function(ticker) {
 }
 
 
-// CRONBUYS
+// ---- CRON BUYs -------------------------------
 
 // set a cron buy for a user
 app.post('/cronbuys/set', isAuth, async function(req,res) {
@@ -632,7 +631,7 @@ app.get('/cronbuys/run', async function(req,res) {
 });
 
 
-// END TRANSACTION
+// ---- END CRON BUY -------------------------------
 
 
 app.listen(5555);

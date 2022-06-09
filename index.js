@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const { randBitcoinAddress } = require('@ngneat/falso');
+const moment = require('moment');
 
 const app = express();
 
@@ -32,6 +33,7 @@ const isAdmin = (req,res,next) => {
 }
 
 const { Coin, User, Wallet, Notification, Admin, Cronbuy } = require('./src/db/models');
+const res = require('express/lib/response');
 
 //http://localhost:5555/
 
@@ -575,6 +577,60 @@ app.post('/cronbuys/update', isAuth, async function(req,res) {
         res.status(500).send('No se pudo realizar la operacion');
     }
 })
+
+// run the cron buy
+async function runCronBuys() {
+    const cronBuys = await Cronbuy.findAll();
+    let today = moment();
+    try{
+        cronBuys.forEach(async (cron) => {
+            let diffDays = today.diff(cron.lastPurchaseDate,'days');
+        
+            if(diffDays >= cron.frequency) {
+                let coinToBuy = await Coin.findByPk(cron.coinId);
+                let usdtCoin  = await Coin.findOne({ where: { ticker: 'USDT' }});
+                
+                // User USD wallet
+                let usdUserWallet = await Wallet.findOne({ where: { coinId:usdtCoin.id, userId:cron.userId }});
+                // User XX Coin Wallet
+                let coinUserWallet = await Wallet.findOne({ where: { coinId:cron.coinId, userId:cron.userId }});
+                
+                if (usdUserWallet.balance >= cron.usdAmount) {
+                    usdUserWallet.balance = usdUserWallet.balance - cron.usdAmount;
+                    await usdUserWallet.save();
+                    
+                    coinUserWallet.balance = coinUserWallet.balance + cron.usdAmount;
+                    await coinUserWallet.save();
+
+                    await cron.update({
+                        lastPurchaseDate: new Date()
+                    });
+                    
+                    // emitir notificacion a usuario // compra recurrente de X coin
+                    console.log('User id: ' + cron.userId + ' compro ' + cron.usdAmount + ' de ' + coinToBuy.ticker);
+                    
+                }
+            }
+        
+        });
+    } catch(e) {
+        console.log(e.error);
+        res.status(500).send('Error en Cron Buys');
+    }
+}
+
+// probando cron buy / seria un cron job del servidor en realidad
+app.get('/cronbuys/run', async function(req,res) {
+    try {
+        await runCronBuys();
+        res.status(201).send('Cron Buys Ejecutado Ok');
+    } catch(e) {
+        res.status(501).send('Error en Cron buys');
+    }  
+    
+    
+});
+
 
 // END TRANSACTION
 

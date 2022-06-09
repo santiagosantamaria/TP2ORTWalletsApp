@@ -16,7 +16,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
-      amount: {
+      usdAmount: {
         type: Sequelize.INTEGER,
         allowNull: false,
       },

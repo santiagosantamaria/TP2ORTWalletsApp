@@ -498,7 +498,7 @@ const getCoinIdByTicker = async function(ticker) {
 
 // sending params via POST json
 app.post('/cronbuys/set', isAuth, async function(req,res) {
-    const { ticker, amount, frequency } = req.body;
+    const { ticker, usdAmount, frequency } = req.body;
     let userId = req.session.userId;
     let coin   = await Coin.findOne({ where:{ ticker:ticker }});
     let coinId = coin.id;    
@@ -511,7 +511,7 @@ app.post('/cronbuys/set', isAuth, async function(req,res) {
                 await cron.update({
                     userId: userId,
                     coinId: coinId,
-                    amount: amount,
+                    usdAmount: usdAmount,
                     frequency: frequency
                 });
                 res.status(201).send('Compra Recurrente Actualizada');
@@ -522,7 +522,7 @@ app.post('/cronbuys/set', isAuth, async function(req,res) {
             let newCron = await Cronbuy.build({
                 userId: userId,
                 coinId: coinId,
-                amount: amount,
+                usdAmount: usdAmount,
                 frequency: frequency,
                 lastPurchaseDate: new Date()
             });

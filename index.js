@@ -487,23 +487,14 @@ const getCoinIdByTicker = async function(ticker) {
 
 
 // CRONBUYS
-// set a cron buy for a user // amount is in USD!
-// si ya existe la actualiza con la amount y la frecuencia nueva
-// to do: 
-// stop' a cron buy (delete cron for that coin id)
 
-// modify amount or days, (que se edite junto amount y frequency) (metodo put similar a los de update)
-
-// run the cron buy // check ALL the cron buy data and buy coin, if diffDays(f1,f2) > frequency
-
-// sending params via POST json
+// set a cron buy for a user
 app.post('/cronbuys/set', isAuth, async function(req,res) {
     const { ticker, usdAmount, frequency } = req.body;
     let userId = req.session.userId;
-    let coin   = await Coin.findOne({ where:{ ticker:ticker }});
-    let coinId = coin.id;    
-    
     try {
+        let coin   = await Coin.findOne({ where:{ ticker:ticker }});
+        let coinId = coin.id;    
         let cron = await Cronbuy.findOne({ where:{ userId:userId, coinId:coinId }});
 
         if(cron) {
@@ -535,7 +526,55 @@ app.post('/cronbuys/set', isAuth, async function(req,res) {
     }
 })
 
+// delete a cron buy for a user
+app.delete('/cronbuys/delete/:ticker', isAuth, async function(req,res) {
+    const userId = req.session.userId;
+    const ticker = req.params.ticker;
+    try {
+        let coin = await Coin.findOne({ where:{ ticker:ticker }});
+        let coinId = coin.id;
+        await Cronbuy.destroy({
+              where:{ userId:userId,coinId:coinId }
+            });
+        res.status(201).send('Se Ha Eliminado La Compra Recurrente de ' + ticker);
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
+})
 
+// modify $usd Amount or frequency (days) for a cron buy
+app.post('/cronbuys/update', isAuth, async function(req,res) {
+    const { ticker, usdAmount, frequency } = req.body;
+    let userId = req.session.userId;
+    
+    try {
+        
+        let coin   = await Coin.findOne({ where:{ ticker:ticker }});
+        let coinId = coin.id;    
+        
+        let cron = await Cronbuy.findOne({ where:{ userId:userId, coinId:coinId }});
+
+        if(cron) {
+            try {
+                await cron.update({
+                    userId: userId,
+                    coinId: coinId,
+                    usdAmount: usdAmount,
+                    frequency: frequency
+                });
+                res.status(201).send('Compra Recurrente Actualizada');
+            } catch(err) {
+                res.status(500).send('No Tiene Compras Recurrentes de ' + ticker)
+            }
+         } else {
+            
+            res.status(500).send('No se pudo realizar la operacion');
+         }
+
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
+})
 
 // END TRANSACTION
 

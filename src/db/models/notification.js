@@ -27,10 +27,6 @@ module.exports = (sequelize, DataTypes) => {
       unique: false,
       allowNull: false
     },
-    date: {
-      type: DataTypes.DATE,
-      allowNull: false
-    },
     seen: {
       type: DataTypes.INTEGER,
     },

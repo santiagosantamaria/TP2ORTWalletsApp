@@ -31,7 +31,7 @@ const isAdmin = (req,res,next) => {
     }
 }
 
-const { Coin, User, Wallet, Notification, Admin } = require('./src/db/models');
+const { Coin, User, Wallet, Notification, Admin, Transaction } = require('./src/db/models');
 
 //http://localhost:5555/
 
@@ -517,6 +517,15 @@ app.delete('/notifications/delete/:id', async function(req,res) {
 
 
 //------END NOTIFICATION---------
+
+//---------------------------------------BEGIN TRANSACTIONS---------------------------------
+//LIST ALL TRANSACTIONS
+app.get('/transactions', async function (req,res){
+    let transactions = await Transaction.findAll();
+    return res.send(transactions)
+})
+
+//---------------------------------------END TRANSACTIONS-----------------------------------
 
 /* METODOS JS -----------------------------------------------------------------------------------------------*/
 

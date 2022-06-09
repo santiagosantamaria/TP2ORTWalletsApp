@@ -31,7 +31,7 @@ const isAdmin = (req,res,next) => {
     }
 }
 
-const { Coin, User, Wallet, Notification, Admin } = require('./src/db/models');
+const { Coin, User, Wallet, Notification, Admin, Cronbuy } = require('./src/db/models');
 
 //http://localhost:5555/
 
@@ -442,7 +442,7 @@ app.post('/coins/sendToEmail', isAuth, async function(req,res) {
             await withdrawWallet.save();
             await userToSendWallet.save();
             
-            let resString = 'Enviaste ' + quantity + ' ' + ticker + " a " + email + ". Balance: " + withdrawWallet.balance;
+            var resString = 'Enviaste ' + quantity + ' ' + ticker + " a " + email + ". Balance: " + withdrawWallet.balance;
              
         } else {
             res.status(201).send("No se pudo realizar la operacion");    
@@ -485,6 +485,59 @@ const getCoinIdByTicker = async function(ticker) {
     return coinSearchedByTicker.id;
 }
 
+
+// CRONBUYS
+// set a cron buy for a user // amount is in USD!
+// si ya existe la actualiza con la amount y la frecuencia nueva
+// to do: 
+// stop' a cron buy (delete cron for that coin id)
+
+// modify amount or days, (que se edite junto amount y frequency) (metodo put similar a los de update)
+
+// run the cron buy // check ALL the cron buy data and buy coin, if diffDays(f1,f2) > frequency
+
+// sending params via POST json
+app.post('/cronbuys/set', isAuth, async function(req,res) {
+    const { ticker, amount, frequency } = req.body;
+    let userId = req.session.userId;
+    let coin   = await Coin.findOne({ where:{ ticker:ticker }});
+    let coinId = coin.id;    
+    
+    try {
+        let cron = await Cronbuy.findOne({ where:{ userId:userId, coinId:coinId }});
+
+        if(cron) {
+            try {
+                await cron.update({
+                    userId: userId,
+                    coinId: coinId,
+                    amount: amount,
+                    frequency: frequency
+                });
+                res.status(201).send('Compra Recurrente Actualizada');
+            } catch(err) {
+                res.status(500).send('No se pudo realizar la operacion')
+            }
+         } else {
+            let newCron = await Cronbuy.build({
+                userId: userId,
+                coinId: coinId,
+                amount: amount,
+                frequency: frequency,
+                lastPurchaseDate: new Date()
+            });
+            newCron.save();
+            res.status(201).send('Compra Recurrente Creada');
+         }
+
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
+})
+
+
+
+// END TRANSACTION
 
 
 app.listen(5555);

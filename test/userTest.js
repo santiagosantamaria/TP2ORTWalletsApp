@@ -4,25 +4,28 @@ const chai = require('chai');
 const { DESCRIBE } = require('sequelize');
 const { assert } = chai;
 
-
-describe('Index Response',() => {
-    it('Index should be 201', async function() {
-        axios({ method : 'get', url: 'http://localhost:5555/' })
-            .then((res)=>{
-                assert.equal(res.status,201);
-            }).catch(err => {
-                assert.equal(err.res.status, 422)
-            })
+  
+describe('Users in DB', function () {
+    it('Users Have to be 12', async function () {
+        const users = await axios.get('http://localhost:5555/users/all');
+        // console.log(users);
+        assert.equal(users.data.length, 12);
     });
-})
+});
 
-describe('List All Users Response',() => {
-    it('Users should be an Arary', async function() {
-        axios({ method : 'get', url: 'http://localhost:5555/users/all' })
-            .then((res)=>{
-                assert.equal(res,res);
-            }).catch(err => {
-                assert.equal(err.res.status, 422)
-            })
+
+describe('User Insertion in DB', function () {
+    it('User should be inserted in DB', async function () {
+        let res = await axios({
+            method: 'post',
+            url: 'http://localhost:5555/users/register',
+            data: {
+                firstName: "Edmund", 
+                lastName: "Van Dycke", 
+                email: "edmunart@gmail.com", 
+                password: "12345"
+            },
+        });
+        assert.equal(res.status,201);
     });
-})
+});

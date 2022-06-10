@@ -267,7 +267,7 @@ app.delete('/wallets/delete/:id', isAdmin, async function(req,res) {
 
 /* ---- END WALLET -------------------------------------------------------- */
 
-/* ---- BEGIN TRANSACTIONS --------------------------------------------------------*/
+/* ---- BEGIN COINS --------------------------------------------------------*/
 
 app.post('/coins/buy', isAuth, async function(req,res) {
     const { tickerSearch, quantity } = req.body;
@@ -458,7 +458,7 @@ app.post('/coins/sendToEmail', isAuth, async function(req,res) {
 })
 
 
-//END TRANSACTION
+//END COINS
 
 //------BEGIN NOTIFICATION ------
 

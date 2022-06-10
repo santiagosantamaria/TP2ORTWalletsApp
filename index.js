@@ -651,7 +651,10 @@ async function runCronBuys() {
                     usdUserWallet.balance = usdUserWallet.balance - cron.usdAmount;
                     await usdUserWallet.save();
 
-                    coinUserWallet.balance = coinUserWallet.balance + cron.usdAmount;
+                    // calculo de cantidad de moneda a comprar
+                    let amtBuy = cron.usdAmount / coinToBuy.netPrice; 
+
+                    coinUserWallet.balance = coinUserWallet.balance + amtBuy;
                     await coinUserWallet.save();
 
                     await cron.update({

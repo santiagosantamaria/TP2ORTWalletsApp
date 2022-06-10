@@ -4,13 +4,13 @@ const chai = require('chai');
 const { DESCRIBE } = require('sequelize');
 const { assert } = chai;
 
-  
-describe('Users in DB', function () {
-    it('Users Have to be 13', async function () {
-        const users = await axios.get('http://localhost:5555/users/all');
-        assert.equal(users.data.length, 13);
-    });
-});
+
+// describe('Users in DB', function () {
+//     it('Users Have to be 13', async function () {
+//         const users = await axios.get('http://localhost:5555/users/all');
+//         assert.equal(users.data.length, 13);
+//     });
+// });
 
 describe('User Insertion in DB', function () {
     it('User should be inserted in DB', async function () {
@@ -28,6 +28,25 @@ describe('User Insertion in DB', function () {
     });
 });
 
+describe('User Insertion in DB', function () {
+    it('User should be inserted in DB',  function (done) {
+        // let res =  
+        axios({
+            method: 'post',
+            url: 'http://localhost:5555/users/register',
+            data: {
+                firstName: "Edmund", 
+                lastName: "Van Dycke", 
+                email: "edmunart@gmail.com", 
+                password: "12345"
+            },
+        }).then(res => {
+            assert.equal(res.status,201);
+            done();
+        });
+        
+    });
+});
 
 // describe('Edit User in DB', function () {
 //     it('User info should be edited in DB', async function () {

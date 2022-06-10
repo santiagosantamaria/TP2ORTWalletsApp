@@ -121,7 +121,7 @@ app.post('/users/register', async function(req,res) {
 })
 
 // update a user
-app.put('/users/update/:id', async function(req,res) {
+app.put('/users/:id', async function(req,res) {
     const { firstName, lastName, email, password } = req.body;
     const userId = req.params.id;
     try {

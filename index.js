@@ -320,10 +320,10 @@ app.post('/coins/sell', isAuth, async function(req,res) {
 
         if (walletCoin.balance >= quantity) {
 
-            walletUsdt.balance += netPay;
+            walletUsdt.balance = walletUsdt.balance + netPay;
            await walletUsdt.save();
 
-           walletCoin.balance -= quantity;
+           walletCoin.balance = walletCoin.balance - quantity;
            await walletCoin.save();
 
            resString = 'Vendiste ' + quantity + ' ' + tickerSearch + ' por ' + netPay + ' USDT';

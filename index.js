@@ -43,40 +43,22 @@ app.get('/', function (req,res) {
 })
 
 
-// get user wallets
-
-app.get('/listcoins', async function(req,res) {
-	const coins = await Coin.findAll();
-    return res.send(coins);
-})
-
 
 /* ---- BEGIN USERS -------------------------------------------------------- */
 
-app.get('/users/all', async function(req,res) {
+app.get('/users', async function(req,res) {
 	const users = await User.findAll();
     return res.send(users);
 })
 
-app.get('/users/find/:id', async function(req,res) {
+app.get('/users/:id', async function(req,res) {
 	const userId = req.params.id;
     const user = await User.findByPk(userId);
     return res.send(user);
 })
 
-app.get('/users/profile',isAuth, async function(req,res) {
-	const userId = req.session.userId;
-    const user = await User.findByPk(userId);
-    const viewData = {
-        "Full Name": user.firstName + ' ' + user.lastName,
-        "Email": user.email,
-        "Member Since": user.createdAt
-    }
-    return res.send(viewData);
-})
-
 // sending params via post json
-app.post('/users/register', async function(req,res) {
+app.post('/users', async function(req,res) {
     const { firstName, lastName, email, password } = req.body;
     console.log(email)
     try {
@@ -121,9 +103,10 @@ app.post('/users/register', async function(req,res) {
 })
 
 // update a user
-app.put('/users/update/:id', async function(req,res) {
+app.put('/users', async function(req,res) {
     const { firstName, lastName, email, password } = req.body;
-    const userId = req.params.id;
+    // id should come from authenticated user
+    const userId = 1;
     try {
         await User.update({
             firstName: firstName,
@@ -140,7 +123,7 @@ app.put('/users/update/:id', async function(req,res) {
 })
 
 // delete a user by id // asociations not checked
-app.delete('/users/delete/:id', isAdmin, async function(req,res) {
+app.delete('/users/:id', async function(req,res) {
     const userId = req.params.id;
     try {
         await User.destroy({
@@ -152,74 +135,28 @@ app.delete('/users/delete/:id', isAdmin, async function(req,res) {
     }
 })
 
-// login with email and password
-app.post('/users/login', async function(req,res) {
-    const { email, password } = req.body;
-    try {
-        const user = await User.findOne({ where: { email, password }})
-
-        if( user == null) {
-            return res.status(400).send('Usuario no encontrado');
-        }
-
-        req.session.isAuth = true;
-        req.session.userId = user.id;
-        req.session.isAdmin = false;
-
-        // check if user is admin
-        const admin = await Admin.findOne({ where: { userId:user.id }})
-        if( admin !== null) {
-            req.session.isAdmin = true;
-            console.log("user is Admin !!")
-        }
-
-        res.status(201).send('Login Ok');
-
-        } catch (error) {
-            res.status(500).send();
-        }
-})
-
-app.post('/users/logout', async function(req,res) {
-    req.session.isAuth = false;
-    req.session.userId = null;
-    res.status(201).send('Logout Ok');
-})
-
-/*list user wallets*/
-app.get('/listUserWallets', isAuth, async function(req,res) {
-	const userId = req.session.userId;
-
-    const wallets = await Wallet.findAll({
-            where:{
-                userId:userId
-            }
-    });
-    return res.send(wallets);
-})
-
 
 /* ---- END USERS -------------------------------------------------------- */
 
 /* ---- BEGIN WALLET -------------------------------------------------------- */
 
 
-/*list wallets*/
-app.get('/listwallets', async function(req,res) {
-	const wallets = await Wallet.findAll();
-    return res.send(wallets);
-})
+// /*list wallets*/
+// app.get('/wallets', async function(req,res) {
+// 	const wallets = await Wallet.findAll();
+//     return res.send(wallets);
+// })
 
-/*get wallet by id*/
-app.get('/getonewallet/:id', async function(req,res) {
-    const userId = req.params.id;
+// get user wallets
+app.get('/wallets', async function(req,res) {
+    const userId = 14;
     const user = await User.findByPk(userId);
     const wallet = await user.getWallets();
     return res.send(wallet);
 })
 
 /* add wallet */
-app.post('/wallets/new', async function(req,res) {
+app.post('/wallets', async function(req,res) {
     const { coinId, userId, balance, adress } = req.body;
     try {
         let newWallet = await Wallet.build({
@@ -235,8 +172,9 @@ app.post('/wallets/new', async function(req,res) {
     }
 })
 
-app.put('/wallets/update/:id', async function(req,res) {
-    const { coinId, userId, balance, adress } = req.body;
+app.put('/wallets', async function(req,res) {
+    const { coinId, balance, adress } = req.body;
+    let userId = 14;
     const walletId = req.params.id;
     try {
         await Wallet.update({
@@ -253,13 +191,13 @@ app.put('/wallets/update/:id', async function(req,res) {
     }
 })
 
-app.delete('/wallets/delete/:id', isAdmin, async function(req,res) {
+app.delete('/wallets', async function(req,res) {
     const walletId = req.params.id;
     try {
         await Wallet.destroy({
               where:{ id:walletId }
             });
-        res.status(201).send('Wallet Borrada / se fue a cero');
+        res.status(201).send('Wallet Borrada');
     } catch(err) {
         res.status(500).send('No se pudo realizar la operacion');
     }
@@ -268,6 +206,12 @@ app.delete('/wallets/delete/:id', isAdmin, async function(req,res) {
 /* ---- END WALLET -------------------------------------------------------- */
 
 /* ---- BEGIN COINS --------------------------------------------------------*/
+
+
+app.get('/coins', async function(req,res) {
+	const coins = await Coin.findAll();
+    return res.send(coins);
+})
 
 app.post('/coins/buy', isAuth, async function(req,res) {
     const { tickerSearch, quantity } = req.body;

@@ -57,7 +57,7 @@ app.get('/users/:id', async function(req,res) {
     return res.send(user);
 })
 
-// sending params via post json
+// create a new user / sending params via post json
 app.post('/users', async function(req,res) {
     const { firstName, lastName, email, password } = req.body;
     console.log(email)
@@ -155,7 +155,7 @@ app.get('/wallets', async function(req,res) {
     return res.send(wallet);
 })
 
-/* add wallet */
+// add a wallet 
 app.post('/wallets', async function(req,res) {
     const { coinId, userId, balance, adress } = req.body;
     try {
@@ -172,6 +172,7 @@ app.post('/wallets', async function(req,res) {
     }
 })
 
+// edit a wallet
 app.put('/wallets', async function(req,res) {
     const { coinId, balance, adress } = req.body;
     let userId = 14;

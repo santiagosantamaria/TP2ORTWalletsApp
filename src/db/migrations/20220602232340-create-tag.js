@@ -8,9 +8,17 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      
       name: {
         type: Sequelize.STRING
       },
+
+      coinId: {
+        type: Sequelize.DataTypes.INTEGER,
+        unique: false,
+        allowNull: false
+      },
+
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

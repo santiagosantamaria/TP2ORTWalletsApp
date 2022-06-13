@@ -32,7 +32,7 @@ const isAdmin = (req,res,next) => {
     }
 }
 
-const { Coin, User, Wallet, Notification, Admin, Cronbuy } = require('./src/db/models');
+const { Coin, User, Wallet, Notification, Admin, Cronbuy, Tag } = require('./src/db/models');
 const res = require('express/lib/response');
 
 //http://localhost:5555/
@@ -632,6 +632,22 @@ app.get('/cronbuys/run', async function(req,res) {
 
 
 // ---- END CRON BUY -------------------------------
+
+/* ---- BEGIN TAG -------------------------------------------------------- */
+
+app.get('/listtags', async function(req,res) {
+	const tag = await Tag.findAll();
+    return res.send(tag);
+})
+
+app.get('/tags/find/:id', async function(req,res) {
+	const tagId = req.params.id;
+    const tag = await Tag.findByPk(tagId);
+    return res.send(tag);
+})
+
+
+// ---- END TAGS -------------------------------
 
 
 app.listen(5555);

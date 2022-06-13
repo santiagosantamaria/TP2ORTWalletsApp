@@ -32,7 +32,7 @@ const isAdmin = (req,res,next) => {
     }
 }
 
-const { Coin, User, Wallet, Notification, Admin, Cronbuy } = require('./src/db/models');
+const { Coin, User, Wallet, Notification, Admin, Cronbuy, Transaction } = require('./src/db/models');
 const res = require('express/lib/response');
 
 //http://localhost:5555/
@@ -267,7 +267,7 @@ app.delete('/wallets/delete/:id', isAdmin, async function(req,res) {
 
 /* ---- END WALLET -------------------------------------------------------- */
 
-/* ---- BEGIN TRANSACTIONS --------------------------------------------------------*/
+/* ---- BEGIN COINS --------------------------------------------------------*/
 
 app.post('/coins/buy', isAuth, async function(req,res) {
     const { tickerSearch, quantity } = req.body;
@@ -320,10 +320,10 @@ app.post('/coins/sell', isAuth, async function(req,res) {
 
         if (walletCoin.balance >= quantity) {
 
-            walletUsdt.balance += netPay;
+            walletUsdt.balance = walletUsdt.balance + netPay;
            await walletUsdt.save();
 
-           walletCoin.balance -= quantity;
+           walletCoin.balance = walletCoin.balance - quantity;
            await walletCoin.save();
 
            resString = 'Vendiste ' + quantity + ' ' + tickerSearch + ' por ' + netPay + ' USDT';
@@ -458,24 +458,77 @@ app.post('/coins/sendToEmail', isAuth, async function(req,res) {
 })
 
 
-//END TRANSACTION
+//END COINS
 
 //------BEGIN NOTIFICATION ------
 
+//LIST ALL NOTIFICATIONS
 app.get('/notifications', async function (req,res){
     let notifications = await Notification.findAll()
     return res.send(notifications)
 })
 
-//get user notifications
-app.get('/getusernotification', async function (req,res){
-    const john = await User.findByPk(2);
-    const notification = await john.getNotifications();
+//get user notifications (logged user)
+app.get('/notifications/notificationsfromlogged', isAuth, async function (req,res){
+    const userId = req.session.userId;
+
+    const user = await User.findByPk(userId);
+    console.log("TODAS LAS WALLETS DE ESTE USUARIO " + allWallets)
+    const notification = await user.getNotifications();
 
     return res.send(notification)
 })
 
+//new notification
+// sending params via post json
+app.post('/notifications/newnotification', async  function (req, res){
+   console.log('METODO NEW NOTIFICATION')
+    const {title, text, userId} = req.body;
+    console.log('TITULO ' + title);
+    try{
+        let user = await User.findOne({ where:{ id:userId }});
+        console.log('USUARIO BUSCADO ' + user.firstName)
+
+        if(user == null){
+            res.status(500).send('No se encontro a un usuario con ese id');
+        }else{
+            let newNotification = await Notification.create({title: title, text: text, userId:userId, seen: 0}) //COMO LE PASO LA FECHA?
+            console.log(newNotification)
+
+
+        }
+        res.status(201).send('NOTIFICACION CREADA');
+
+    }catch (err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+})
+
+app.delete('/notifications/delete/:id', async function(req,res) {
+    const notificationId = req.params.id;
+    try {
+        await Notification.destroy({
+            where:{ id:notificationId }
+        });
+        res.status(201).send('Notificacion Borrada del sistema');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
+})
+
+
 //------END NOTIFICATION---------
+
+//---------------------------------------BEGIN TRANSACTIONS---------------------------------
+//LIST ALL TRANSACTIONS
+app.get('/transactions', async function (req,res){
+    let transactions = await Transaction.findAll();
+    return res.send(transactions)
+})
+
+
+
+//---------------------------------------END TRANSACTIONS-----------------------------------
 
 /* METODOS JS -----------------------------------------------------------------------------------------------*/
 
@@ -495,7 +548,7 @@ app.post('/cronbuys/set', isAuth, async function(req,res) {
     let userId = req.session.userId;
     try {
         let coin   = await Coin.findOne({ where:{ ticker:ticker }});
-        let coinId = coin.id;    
+        let coinId = coin.id;
         let cron = await Cronbuy.findOne({ where:{ userId:userId, coinId:coinId }});
 
         if(cron) {
@@ -547,12 +600,12 @@ app.delete('/cronbuys/delete/:ticker', isAuth, async function(req,res) {
 app.post('/cronbuys/update', isAuth, async function(req,res) {
     const { ticker, usdAmount, frequency } = req.body;
     let userId = req.session.userId;
-    
+
     try {
-        
+
         let coin   = await Coin.findOne({ where:{ ticker:ticker }});
-        let coinId = coin.id;    
-        
+        let coinId = coin.id;
+
         let cron = await Cronbuy.findOne({ where:{ userId:userId, coinId:coinId }});
 
         if(cron) {
@@ -568,7 +621,7 @@ app.post('/cronbuys/update', isAuth, async function(req,res) {
                 res.status(500).send('No Tiene Compras Recurrentes de ' + ticker)
             }
          } else {
-            
+
             res.status(500).send('No se pudo realizar la operacion');
          }
 
@@ -584,33 +637,36 @@ async function runCronBuys() {
     try{
         cronBuys.forEach(async (cron) => {
             let diffDays = today.diff(cron.lastPurchaseDate,'days');
-        
+
             if(diffDays >= cron.frequency) {
                 let coinToBuy = await Coin.findByPk(cron.coinId);
                 let usdtCoin  = await Coin.findOne({ where: { ticker: 'USDT' }});
-                
+
                 // User USD wallet
                 let usdUserWallet = await Wallet.findOne({ where: { coinId:usdtCoin.id, userId:cron.userId }});
                 // User XX Coin Wallet
                 let coinUserWallet = await Wallet.findOne({ where: { coinId:cron.coinId, userId:cron.userId }});
-                
+
                 if (usdUserWallet.balance >= cron.usdAmount) {
                     usdUserWallet.balance = usdUserWallet.balance - cron.usdAmount;
                     await usdUserWallet.save();
-                    
-                    coinUserWallet.balance = coinUserWallet.balance + cron.usdAmount;
+
+                    // calculo de cantidad de moneda a comprar
+                    let amtBuy = cron.usdAmount / coinToBuy.netPrice; 
+
+                    coinUserWallet.balance = coinUserWallet.balance + amtBuy;
                     await coinUserWallet.save();
 
                     await cron.update({
                         lastPurchaseDate: new Date()
                     });
-                    
+
                     // emitir notificacion a usuario // compra recurrente de X coin
                     console.log('User id: ' + cron.userId + ' compro ' + cron.usdAmount + ' de ' + coinToBuy.ticker);
-                    
+
                 }
             }
-        
+
         });
     } catch(e) {
         console.log(e.error);
@@ -625,9 +681,9 @@ app.get('/cronbuys/run', async function(req,res) {
         res.status(201).send('Cron Buys Ejecutado Ok');
     } catch(e) {
         res.status(501).send('Error en Cron buys');
-    }  
-    
-    
+    }
+
+
 });
 
 

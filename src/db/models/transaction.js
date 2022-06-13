@@ -3,32 +3,33 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Notification extends Model {
+  class Transaction extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Notification.belongsTo(models.User, {foreignKey: 'userId'})
+      Transaction.belongsTo(models.Wallet,{
+        foreignKey: 'walletId',
+      })
     }
   }
-  Notification.init({
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false
+  Transaction.init({
+    id: {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
     },
     text: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    userId: {
+    walletId: {
       type: DataTypes.INTEGER,
       unique: false,
       allowNull: false
-    },
-    seen: {
-      type: DataTypes.INTEGER,
     },
     createdAt: {
       allowNull: false,
@@ -37,12 +38,13 @@ module.exports = (sequelize, DataTypes) => {
     updatedAt: {
       allowNull: false,
       type: DataTypes.DATE
-    },
-    deletedAt: DataTypes.DATE
+    }
+
+
   }, {
     sequelize,
-    modelName: 'Notification',
-    tableName: 'notifications'
+    modelName: 'Transaction',
+    tableName: 'transactions'
   });
-  return Notification;
+  return Transaction;
 };

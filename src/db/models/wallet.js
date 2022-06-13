@@ -10,7 +10,8 @@ module.exports = (sequelize, DataTypes) => {
             }),
             Wallet.hasOne(models.Coin,{
               foreignKey: 'id',
-          })
+          }),
+          Wallet.hasMany(models.Transaction)
         }
     }
     Wallet.init({

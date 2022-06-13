@@ -1,22 +1,16 @@
 'use strict';
 
-const { randAlphaNumeric } = require('@ngneat/falso')
-
 module.exports = {
   async up (queryInterface, Sequelize) {
-
-    for (let i = 1; i < 12; i++) {
-      await queryInterface.bulkInsert('notifications',[{
-        title: "Noticia " + i,
-        text: "Este es el texto de la notificacion " + i,
-        seen: 0,
-        userId: i,
+    for (let i = 1; i <= 4; i++) {
+      await queryInterface.bulkInsert('transactions',[{
+        text: "Transaccion " + i + " Agregaste $0 a tu wallet",
+        walletId: i,
         createdAt: new Date,
         updatedAt: new Date
       }
       ], );
     }
-
 
 
   },
@@ -28,6 +22,7 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    await queryInterface.bulkDelete('Notifications', null, {});
+
+    await queryInterface.bulkDelete('Transactions', null, {});
   }
 };

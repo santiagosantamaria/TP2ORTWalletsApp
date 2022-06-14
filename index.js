@@ -149,12 +149,22 @@ app.delete('/users/:id', async function(req,res) {
 
 // get user wallets
 app.get('/wallets', async function(req,res) {
-    const userId = 14;
+    
+    const userId = 1;
     const user = await User.findByPk(userId);
     const wallet = await user.getWallets();
-    return res.send(wallet);
+    res.status(201).send(wallet);
+
 })
 
+app.get('/wallets/findbyemail/:email', async function(req,res) {
+    const email = req.params.email;
+    const user = await User.findOne({ where: { email:email } });
+    
+    const wallet = await user.getWallets();
+    res.status(201).send(wallet);
+
+})
 // add a wallet 
 app.post('/wallets', async function(req,res) {
     const { coinId, userId, balance, adress } = req.body;

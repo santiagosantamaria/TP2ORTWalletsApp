@@ -274,7 +274,7 @@ app.post('/coins/buy', isAuth, async function(req,res) {
 
     let coinToBuy = await Coin.findOne({ where: { ticker: tickerSearch }});
     let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' }});
-    let userIdBuscado = req.session.userId;
+    let userIdBuscado = 1;
 
 
    try {
@@ -296,10 +296,10 @@ app.post('/coins/buy', isAuth, async function(req,res) {
         } else {
            resString = 'No tienes suficiente dinero para comprar ' + quantity + ' ' + tickerSearch;
         }
-       res.status(201).send(resString);
+      res.status(201).send(resString);
 
     } catch(err) {
-       res.status(500).send('No se pudo realizar la operacion');
+        res.status(500).send('No se pudo realizar la operacion');
     }
 
 })
@@ -309,7 +309,7 @@ app.post('/coins/sell', isAuth, async function(req,res) {
 
     let coinToSell = await Coin.findOne({ where: { ticker: tickerSearch }});
     let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' }});
-    let userIdBuscado = req.session.userId;
+    let userIdBuscado = 1;
 
    try {
        const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinUsdt.id }});
@@ -338,12 +338,12 @@ app.post('/coins/sell', isAuth, async function(req,res) {
 
 })
 
-app.post('/coins/swap', isAuth, async function(req,res) {
+app.post('/coins/swap', async function(req,res) {
     const { tickerSell, tickerBuy, quantity } = req.body;
 
     let coinToSell = await Coin.findOne({ where: { ticker: tickerSell }});
     let coinToBuy = await Coin.findOne({ where: { ticker: tickerBuy }});
-    let userIdBuscado = req.session.userId;
+    let userIdBuscado = 1;
 
    try {
         const walletSell = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToSell.id }});
@@ -401,7 +401,7 @@ app.post('/coins/deposit', isAuth, async function(req,res) {
 app.post('/coins/withdraw', isAuth, async function(req,res) {
     const { adress, ticker, quantity } = req.body;
     let resString = "";
-    let userId = req.session.userId;
+    let userId = 1;
 
    try {
         let withdrawCoin = await Coin.findOne({ where: { ticker: ticker}})
@@ -425,7 +425,7 @@ app.post('/coins/withdraw', isAuth, async function(req,res) {
 //  send coins to a user with email
 app.post('/coins/sendToEmail', isAuth, async function(req,res) {
     const { email, ticker, quantity } = req.body;
-    let userLoggedId = req.session.userId;
+    let userLoggedId = 1;
     
     try {
         

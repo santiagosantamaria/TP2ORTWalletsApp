@@ -64,6 +64,16 @@ app.get('/users/find/:id', async function(req,res) {
     return res.send(user);
 })
 
+app.get('/users/findbyemail/:email', async function(req,res) {
+    const email = req.params.email;
+    const user = await User.findOne({ where: { email:email } });
+
+    res.status(201).send(user);
+
+})
+
+
+
 app.get('/users/profile',isAuth, async function(req,res) {
 	const userId = req.session.userId;
     const user = await User.findByPk(userId);
@@ -76,7 +86,7 @@ app.get('/users/profile',isAuth, async function(req,res) {
 })
 
 // sending params via post json
-app.post('/users/register', async function(req,res) {
+app.post('/users', async function(req,res) {
     const { firstName, lastName, email, password } = req.body;
     console.log(email)
     try {
@@ -543,9 +553,9 @@ const getCoinIdByTicker = async function(ticker) {
 // ---- CRON BUYs -------------------------------
 
 // set a cron buy for a user
-app.post('/cronbuys/set', isAuth, async function(req,res) {
+app.post('/cronbuys', async function(req,res) {
     const { ticker, usdAmount, frequency } = req.body;
-    let userId = req.session.userId;
+    let userId = 27;
     try {
         let coin   = await Coin.findOne({ where:{ ticker:ticker }});
         let coinId = coin.id;
@@ -581,8 +591,8 @@ app.post('/cronbuys/set', isAuth, async function(req,res) {
 })
 
 // delete a cron buy for a user
-app.delete('/cronbuys/delete/:ticker', isAuth, async function(req,res) {
-    const userId = req.session.userId;
+app.delete('/cronbuys/:ticker', async function(req,res) {
+    const userId = 27;
     const ticker = req.params.ticker;
     try {
         let coin = await Coin.findOne({ where:{ ticker:ticker }});
@@ -597,9 +607,9 @@ app.delete('/cronbuys/delete/:ticker', isAuth, async function(req,res) {
 })
 
 // modify $usd Amount or frequency (days) for a cron buy
-app.post('/cronbuys/update', isAuth, async function(req,res) {
+app.put('/cronbuys', async function(req,res) {
     const { ticker, usdAmount, frequency } = req.body;
-    let userId = req.session.userId;
+    let userId = 27;
 
     try {
 
@@ -632,14 +642,19 @@ app.post('/cronbuys/update', isAuth, async function(req,res) {
 
 // run the cron buy
 async function runCronBuys() {
+
     const cronBuys = await Cronbuy.findAll();
     let today = moment();
     try{
-        cronBuys.forEach(async (cron) => {
+        for (const cron of cronBuys) {
             let diffDays = today.diff(cron.lastPurchaseDate,'days');
 
+
+           console.log( " -------DIFF DAYS --------" + diffDays)
+            console.log( " -------crons frecuency --------" + cron.frequency)
             if(diffDays >= cron.frequency) {
                 let coinToBuy = await Coin.findByPk(cron.coinId);
+
                 let usdtCoin  = await Coin.findOne({ where: { ticker: 'USDT' }});
 
                 // User USD wallet
@@ -652,7 +667,8 @@ async function runCronBuys() {
                     await usdUserWallet.save();
 
                     // calculo de cantidad de moneda a comprar
-                    let amtBuy = cron.usdAmount / coinToBuy.netPrice; 
+                    let amtBuy = cron.usdAmount / coinToBuy.unitDolarPrice;
+
 
                     coinUserWallet.balance = coinUserWallet.balance + amtBuy;
                     await coinUserWallet.save();
@@ -663,11 +679,14 @@ async function runCronBuys() {
 
                     // emitir notificacion a usuario // compra recurrente de X coin
                     console.log('User id: ' + cron.userId + ' compro ' + cron.usdAmount + ' de ' + coinToBuy.ticker);
-
+                   await Notification.create({title: "COMPRA RECURRENTE COMPLETADA", text: "COMPRASTE  " + cron.usdAmount  + " de " + coinToBuy.ticker, userId: cron.userId, seen: 0})
+                }else{
+                    console.log("ENTRE AL ELSE")
+                    await Notification.create({title: "COMPRA RECURRENTE FALLIDA", text: "No pudiste comprar  " + coinToBuy.ticker  + " por saldo insuficiente", userId: cron.userId, seen: 0})
                 }
             }
 
-        });
+        }
     } catch(e) {
         console.log(e.error);
         res.status(500).send('Error en Cron Buys');
@@ -682,8 +701,6 @@ app.get('/cronbuys/run', async function(req,res) {
     } catch(e) {
         res.status(501).send('Error en Cron buys');
     }
-
-
 });
 
 

@@ -1,36 +1,12 @@
 const express = require('express');
-const session = require('express-session');
+
 const { randBitcoinAddress } = require('@ngneat/falso');
 const moment = require('moment');
 
 const app = express();
 
-
 // accept json in post request
 app.use(express.json());
-app.use(
-    session({
-        secret:"Secret_Key",
-        resave:false,
-        saveUninitialized: false
-    })
-)
-
-const isAuth = (req,res,next) => {
-    if(req.session.isAuth) {
-        next()
-    } else {
-        res.status(500).send('Usuario No Logueado')
-    }
-}
-
-const isAdmin = (req,res,next) => {
-    if(req.session.isAdmin) {
-        next()
-    } else {
-        res.status(500).send('Usuario No Autorizado')
-    }
-}
 
 const { Coin, User, Wallet, Notification, Admin, Cronbuy, Transaction } = require('./src/db/models');
 const res = require('express/lib/response');
@@ -59,13 +35,13 @@ app.get('/users/all', async function(req,res) {
 })
 
 app.get('/users/find/:id', async function(req,res) {
-	const userId = req.params.id;
+	const userId = 1;
     const user = await User.findByPk(userId);
     return res.send(user);
 })
 
-app.get('/users/profile',isAuth, async function(req,res) {
-	const userId = req.session.userId;
+app.get('/users/profile', async function(req,res) {
+	const userId = 1;
     const user = await User.findByPk(userId);
     const viewData = {
         "Full Name": user.firstName + ' ' + user.lastName,
@@ -140,8 +116,8 @@ app.put('/users/update/:id', async function(req,res) {
 })
 
 // delete a user by id // asociations not checked
-app.delete('/users/delete/:id', isAdmin, async function(req,res) {
-    const userId = req.params.id;
+app.delete('/users/delete/:id', async function(req,res) {
+    const userId = 1;
     try {
         await User.destroy({
               where:{ id:userId }
@@ -162,17 +138,6 @@ app.post('/users/login', async function(req,res) {
             return res.status(400).send('Usuario no encontrado');
         }
 
-        req.session.isAuth = true;
-        req.session.userId = user.id;
-        req.session.isAdmin = false;
-
-        // check if user is admin
-        const admin = await Admin.findOne({ where: { userId:user.id }})
-        if( admin !== null) {
-            req.session.isAdmin = true;
-            console.log("user is Admin !!")
-        }
-
         res.status(201).send('Login Ok');
 
         } catch (error) {
@@ -181,14 +146,12 @@ app.post('/users/login', async function(req,res) {
 })
 
 app.post('/users/logout', async function(req,res) {
-    req.session.isAuth = false;
-    req.session.userId = null;
     res.status(201).send('Logout Ok');
 })
 
 /*list user wallets*/
-app.get('/listUserWallets', isAuth, async function(req,res) {
-	const userId = req.session.userId;
+app.get('/listUserWallets', async function(req,res) {
+	const userId = 1;
 
     const wallets = await Wallet.findAll({
             where:{
@@ -212,7 +175,7 @@ app.get('/listwallets', async function(req,res) {
 
 /*get wallet by id*/
 app.get('/getonewallet/:id', async function(req,res) {
-    const userId = req.params.id;
+    const userId = 1;
     const user = await User.findByPk(userId);
     const wallet = await user.getWallets();
     return res.send(wallet);
@@ -253,7 +216,7 @@ app.put('/wallets/update/:id', async function(req,res) {
     }
 })
 
-app.delete('/wallets/delete/:id', isAdmin, async function(req,res) {
+app.delete('/wallets/delete/:id', async function(req,res) {
     const walletId = req.params.id;
     try {
         await Wallet.destroy({
@@ -269,12 +232,12 @@ app.delete('/wallets/delete/:id', isAdmin, async function(req,res) {
 
 /* ---- BEGIN COINS --------------------------------------------------------*/
 
-app.post('/coins/buy', isAuth, async function(req,res) {
+app.post('/coins/buy', async function(req,res) {
     const { tickerSearch, quantity } = req.body;
 
     let coinToBuy = await Coin.findOne({ where: { ticker: tickerSearch }});
     let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' }});
-    let userIdBuscado = req.session.userId;
+    let userIdBuscado = 1;
 
 
    try {
@@ -304,12 +267,12 @@ app.post('/coins/buy', isAuth, async function(req,res) {
 
 })
 
-app.post('/coins/sell', isAuth, async function(req,res) {
+app.post('/coins/sell', async function(req,res) {
     const { tickerSearch, quantity } = req.body;
 
     let coinToSell = await Coin.findOne({ where: { ticker: tickerSearch }});
     let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' }});
-    let userIdBuscado = req.session.userId;
+    let userIdBuscado = 1;
 
    try {
        const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinUsdt.id }});
@@ -338,12 +301,12 @@ app.post('/coins/sell', isAuth, async function(req,res) {
 
 })
 
-app.post('/coins/swap', isAuth, async function(req,res) {
+app.post('/coins/swap', async function(req,res) {
     const { tickerSell, tickerBuy, quantity } = req.body;
 
     let coinToSell = await Coin.findOne({ where: { ticker: tickerSell }});
     let coinToBuy = await Coin.findOne({ where: { ticker: tickerBuy }});
-    let userIdBuscado = req.session.userId;
+    let userIdBuscado = 1;
 
    try {
         const walletSell = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToSell.id }});
@@ -373,7 +336,7 @@ app.post('/coins/swap', isAuth, async function(req,res) {
 
 })
 
-app.post('/coins/deposit', isAuth, async function(req,res) {
+app.post('/coins/deposit', async function(req,res) {
     const { adress, quantity } = req.body;
     let resString = "";
     
@@ -398,10 +361,10 @@ app.post('/coins/deposit', isAuth, async function(req,res) {
 
 })
 
-app.post('/coins/withdraw', isAuth, async function(req,res) {
+app.post('/coins/withdraw', async function(req,res) {
     const { adress, ticker, quantity } = req.body;
     let resString = "";
-    let userId = req.session.userId;
+    let userId = 1;
 
    try {
         let withdrawCoin = await Coin.findOne({ where: { ticker: ticker}})
@@ -423,9 +386,9 @@ app.post('/coins/withdraw', isAuth, async function(req,res) {
 })
 
 //  send coins to a user with email
-app.post('/coins/sendToEmail', isAuth, async function(req,res) {
+app.post('/coins/sendToEmail', async function(req,res) {
     const { email, ticker, quantity } = req.body;
-    let userLoggedId = req.session.userId;
+    let userLoggedId = 1;
     
     try {
         
@@ -469,8 +432,8 @@ app.get('/notifications', async function (req,res){
 })
 
 //get user notifications (logged user)
-app.get('/notifications/notificationsfromlogged', isAuth, async function (req,res){
-    const userId = req.session.userId;
+app.get('/notifications/notificationsfromlogged', async function (req,res){
+    const userId = 1;
 
     const user = await User.findByPk(userId);
     console.log("TODAS LAS WALLETS DE ESTE USUARIO " + allWallets)
@@ -543,9 +506,9 @@ const getCoinIdByTicker = async function(ticker) {
 // ---- CRON BUYs -------------------------------
 
 // set a cron buy for a user
-app.post('/cronbuys/set', isAuth, async function(req,res) {
+app.post('/cronbuys/set', async function(req,res) {
     const { ticker, usdAmount, frequency } = req.body;
-    let userId = req.session.userId;
+    let userId = 1;
     try {
         let coin   = await Coin.findOne({ where:{ ticker:ticker }});
         let coinId = coin.id;
@@ -581,8 +544,8 @@ app.post('/cronbuys/set', isAuth, async function(req,res) {
 })
 
 // delete a cron buy for a user
-app.delete('/cronbuys/delete/:ticker', isAuth, async function(req,res) {
-    const userId = req.session.userId;
+app.delete('/cronbuys/delete/:ticker', async function(req,res) {
+    const userId = 1;
     const ticker = req.params.ticker;
     try {
         let coin = await Coin.findOne({ where:{ ticker:ticker }});
@@ -597,9 +560,9 @@ app.delete('/cronbuys/delete/:ticker', isAuth, async function(req,res) {
 })
 
 // modify $usd Amount or frequency (days) for a cron buy
-app.post('/cronbuys/update', isAuth, async function(req,res) {
+app.post('/cronbuys/update', async function(req,res) {
     const { ticker, usdAmount, frequency } = req.body;
-    let userId = req.session.userId;
+    let userId = 1;
 
     try {
 

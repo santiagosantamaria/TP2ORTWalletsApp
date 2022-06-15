@@ -1,36 +1,12 @@
 const express = require('express');
-const session = require('express-session');
+
 const { randBitcoinAddress } = require('@ngneat/falso');
 const moment = require('moment');
 
 const app = express();
 
-
 // accept json in post request
 app.use(express.json());
-app.use(
-    session({
-        secret:"Secret_Key",
-        resave:false,
-        saveUninitialized: false
-    })
-)
-
-const isAuth = (req,res,next) => {
-    if(req.session.isAuth) {
-        next()
-    } else {
-        res.status(500).send('Usuario No Logueado')
-    }
-}
-
-const isAdmin = (req,res,next) => {
-    if(req.session.isAdmin) {
-        next()
-    } else {
-        res.status(500).send('Usuario No Autorizado')
-    }
-}
 
 const { Coin, User, Wallet, Notification, Admin, Cronbuy, Transaction, Tag } = require('./src/db/models');
 const res = require('express/lib/response');
@@ -59,7 +35,7 @@ app.get('/users/all', async function(req,res) {
 })
 
 app.get('/users/find/:id', async function(req,res) {
-	const userId = req.params.id;
+	const userId = 1;
     const user = await User.findByPk(userId);
     return res.send(user);
 })
@@ -148,8 +124,8 @@ app.put('/users/update/:id', async function(req,res) {
 })
 
 // delete a user by id // asociations not checked
-app.delete('/users/delete/:id', isAdmin, async function(req,res) {
-    const userId = req.params.id;
+app.delete('/users/delete/:id', async function(req,res) {
+    const userId = 1;
     try {
         await User.destroy({
               where:{ id:userId }
@@ -170,17 +146,6 @@ app.post('/users/login', async function(req,res) {
             return res.status(400).send('Usuario no encontrado');
         }
 
-        req.session.isAuth = true;
-        req.session.userId = user.id;
-        req.session.isAdmin = false;
-
-        // check if user is admin
-        const admin = await Admin.findOne({ where: { userId:user.id }})
-        if( admin !== null) {
-            req.session.isAdmin = true;
-            console.log("user is Admin !!")
-        }
-
         res.status(201).send('Login Ok');
 
         } catch (error) {
@@ -189,8 +154,6 @@ app.post('/users/login', async function(req,res) {
 })
 
 app.post('/users/logout', async function(req,res) {
-    req.session.isAuth = false;
-    req.session.userId = null;
     res.status(201).send('Logout Ok');
 })
 
@@ -220,7 +183,7 @@ app.get('/listwallets', async function(req,res) {
 
 /*get wallet by id*/
 app.get('/getonewallet/:id', async function(req,res) {
-    const userId = req.params.id;
+    const userId = 1;
     const user = await User.findByPk(userId);
     const wallet = await user.getWallets();
     return res.send(wallet);
@@ -261,7 +224,7 @@ app.put('/wallets/update/:id', async function(req,res) {
     }
 })
 
-app.delete('/wallets/delete/:id', isAdmin, async function(req,res) {
+app.delete('/wallets/delete/:id', async function(req,res) {
     const walletId = req.params.id;
     try {
         await Wallet.destroy({
@@ -304,10 +267,10 @@ app.post('/coins/buy', async function(req,res) {
         } else {
            resString = 'No tienes suficiente dinero para comprar ' + quantity + ' ' + tickerSearch;
         }
-      res.status(201).send(resString);
+       res.status(201).send(resString);
 
     } catch(err) {
-        res.status(500).send('No se pudo realizar la operacion');
+       res.status(500).send('No se pudo realizar la operacion');
     }
 
 })
@@ -477,8 +440,8 @@ app.get('/notifications', async function (req,res){
 })
 
 //get user notifications (logged user)
-app.get('/notifications/mynotifications', async function (req,res){
-    const userId = 27;
+app.get('/notifications/notificationsfromlogged', async function (req,res){
+    const userId = 1;
 
     const user = await User.findByPk(userId);
     const notification = await user.getNotifications();

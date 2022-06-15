@@ -1,12 +1,14 @@
 const axios = require('axios');
 const { use } = require('chai');
 const chai = require('chai');
+
 const { DESCRIBE } = require('sequelize');
 const { assert } = chai;
 const { Coin, User, Wallet, Notification, Admin, Cronbuy, Transaction } = require('../src/db/models');
 
 
-describe('CronBuy', function () {
+//testeo la respuesta http. Funciona genial pero no veo si realiza cambios o no.
+describe('CronBuy', function (done) {
     it('CronBuys Runs OK', async function () {
         axios({
             method: 'get',
@@ -18,101 +20,70 @@ describe('CronBuy', function () {
     });
 })
 
-//hacer un test para la creacion
-//hacer un test para la notificacion
 
-//TEST 2
 
-describe('CronBuy2', function () {
-    before('Set up new user and new cronbuy', async () => {
+// CronBuy a un usuario con suficiente plata modifica el balance.
+describe('CronBuy3', function () {
+    let walletBTC;
+    let walletUSDT;
+    before('User with enough money can ', async () => {
 
-        await axios({
-            method: 'post',
-            url: 'http://localhost:5555/users',
-            data: {
-                firstName: "Tony",
-                lastName: "Krons",
-                email: "tonykrons@realmadrid.com",
-                password: "12345"
-            },
-        })
-
-        let user = await axios({
-            method: 'get',
-            url: 'http://localhost:5555/users/findbyemail/tonykrons@realmadrid.com'
-        });
-
-        //todo como le mando un cronbuy al usuario de arriba si no recibe parametros ya que el id esta hardcodeado
+        //Creo una cron buy para el test (este metodo tiene hardcodeado el id del usuario 27)
         await axios({
             method: 'post',
             url: 'http://localhost:5555/cronbuys',
             data: {
                 "ticker":"BTC",
-                "usdAmount":9999,
+                "usdAmount":3333,
                 "frequency":1
             }
         });
+
+        //obtengo el cronbuy de prueba
+        let cron = await Cronbuy.findOne({ where: {coinId: 6, userId: 27 } } );
+
+        //le cambio la fecha para garantizar que se ejecute
+        cron.lastPurchaseDate = new Date(2021,5,5);
+
+        await cron.save();
+
+       //agarro la wallet de btc y la seteo en cero
+        walletBTC = await Wallet.findOne({where: {coinId: 6, userId: 27}})
+        walletBTC.balance = 0;
+        await walletBTC.save();
+
+        //agarro la de USDT
+        // le pongo 1 millon
+        walletUSDT = await Wallet.findOne({where: {coinId: 9, userId: 27}})
+        walletUSDT.balance = 9999;
+        await walletUSDT.save();
+
     });
 
-    it('CronBuys Runs OK', async function () {
+    //ejecuto las cronbuy
+    it('CronBuys3 Runs OK',  function (done) {
         axios({
             method: 'get',
             url: 'http://localhost:5555/cronbuys/run',
-        }).then(res => {
-            assert.equal(res.status,201);
+        }).then(async function(resolve){
+            walletBTC = await Wallet.findOne({where: {coinId: 6, userId: 27}})
+            walletUSDT = await Wallet.findOne({where: {coinId: 9, userId: 27}})
+
+            await walletBTC.save();
+            await walletUSDT.save();
+
+            console.log("WALLET BTC: balance " + walletBTC.balance + " userId " + walletBTC.userId + " coinId " + walletBTC.coinId)
+            console.log("WALLET USDT: balance " + walletUSDT.balance + " userId " + walletUSDT.userId + " coinId " + walletUSDT.coinId)
+
+            let balanceResult = walletBTC.balance;
+            let result = 0.1111;
+
+            assert.equal(balanceResult, result, 'balance equal result')
+
             done();
+
+
         });
     });
 })
 
-//TESTEAR LA CREACION DEL CRONBUY?
-
-
-/*
- let sellOk = false;
-        let buyOk = false;
-
-        //let coinToSell = await Coin.findOne({ where: { ticker:"BTC" }});
-        //let coinToBuy = await Coin.findOne({ where: { ticker:"ETH" }});
-
-        let walletSell = await Wallet.findOne({ where: { userId:1, coinId:1}});
-        let walletBuy = await Wallet.findOne({ where: { userId:1, coinId:2 }});
-
-        let balancePreSell = walletSell.balance;
-        let balancePreBuy = walletBuy.balance;
-
-        let res = await axios({
-            method: 'post',
-            url: 'http://localhost:5555/coins/swap',
-            data: {
-                "tickerSell": "BTC",
-                "tickerBuy": "ETH",
-                "quantity": 1
-            },
-        });
-
-
-        let balancePostSell = walletSell.balance;
-        let balancePostBuy = walletBuy.balance;
-
-        console.log("------------------------------------------------------");
-
-        console.log(balancePostSell === (balancePreSell - 1));
-
-        if(balancePostSell === (balancePreSell - 1)){
-            sellOk = true;
-
-        };
-
-        if(balancePostBuy === (balancePreBuy + 12)){
-            buyOk = true;
-        };
-
-
-
-        if (sellOk && buyOk){
-            assert.equal(res.status,201);
-        }
-
-    });
- */

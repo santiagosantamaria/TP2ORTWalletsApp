@@ -479,11 +479,10 @@ app.get('/notifications', async function (req,res){
 })
 
 //get user notifications (logged user)
-app.get('/notifications/notificationsfromlogged', isAuth, async function (req,res){
-    const userId = req.session.userId;
+app.get('/notifications/mynotifications', async function (req,res){
+    const userId = 27;
 
     const user = await User.findByPk(userId);
-    console.log("TODAS LAS WALLETS DE ESTE USUARIO " + allWallets)
     const notification = await user.getNotifications();
 
     return res.send(notification)
@@ -526,6 +525,40 @@ app.delete('/notifications/delete/:id', async function(req,res) {
     }
 })
 
+//marcar una notificacion como leida
+app.put('/notifications/markasseen/', async function(req,res) {
+    const notificationId = 13;
+
+    try {
+        await Notification.update({
+           seen: 1
+        },{
+            where:{ id:notificationId }
+        });
+        res.status(201).send('Notificacion leida');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
+
+//actualizar una notificacion
+app.put('/notifications', async function(req,res) {
+    const { title, text } = req.body;
+    const notificationId = 13;
+
+    try {
+        await Notification.update({
+           title: title,
+            text: text,
+            seen: 0
+        },{
+            where:{ id:notificationId }
+        });
+        res.status(201).send('Notificacion Actualizada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
 
 //------END NOTIFICATION---------
 
@@ -536,6 +569,13 @@ app.get('/transactions', async function (req,res){
     return res.send(transactions)
 })
 
+//nueva transaccion (log)
+
+
+//actualizar transaccion (log)
+
+
+//eliminar transaccion
 
 
 //---------------------------------------END TRANSACTIONS-----------------------------------

@@ -689,6 +689,37 @@ app.delete('/tags/delete/:id', async function(req,res) {
     }
 })
 
+app.get('/tagsfrom/coin/:id', async function(req,res) {
+	const _coinId = req.params.id;
+    const coin = await Coin.findByPk(_coinId);
+    const coinName = coin.name;
+
+    const tagsFromCoin = await Tag.findAll({
+        attributes: ["name"],
+        raw:true,
+        where: {coinId:_coinId}
+    });
+
+    const cantTagsForCoin = tagsFromCoin.length
+    //const tagsNames = JSON.stringify(tagsFromCoin);
+
+   let i = 0;
+   let returnTagsAndCoins = ""
+
+   returnTagsAndCoins = coinName;
+
+   while (i < cantTagsForCoin) {
+
+    const nameTagi = tagsFromCoin[i].name;
+    returnTagsAndCoins = returnTagsAndCoins + ",  " + nameTagi;
+    i = i + 1;
+   }
+
+   //console.log(returnTagsAndCoins);
+    return res.send(returnTagsAndCoins);
+})
+
+
 
 // ---- END TAGS -------------------------------
 

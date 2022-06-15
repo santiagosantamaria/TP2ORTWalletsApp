@@ -40,7 +40,7 @@ describe('CronBuy2: CronBuy a un usuario con suficiente plata modifica el balanc
         });
 
         //obtengo el cronbuy de prueba
-        let cron = await Cronbuy.findOne({ where: {coinId: 6, userId: 27 } } );
+        let cron = await Cronbuy.findOne({ where: {coinId: 1, userId: 27 } } );
 
         //le cambio la fecha para garantizar que se ejecute
         cron.lastPurchaseDate = new Date(2021,5,5);
@@ -48,13 +48,13 @@ describe('CronBuy2: CronBuy a un usuario con suficiente plata modifica el balanc
         await cron.save();
 
        //agarro la wallet de btc y la seteo en cero
-        walletBTC = await Wallet.findOne({where: {coinId: 6, userId: 27}})
+        walletBTC = await Wallet.findOne({where: {coinId: 1, userId: 27}})
         walletBTC.balance = 0;
         await walletBTC.save();
 
         //agarro la de USDT
         // le pongo 1 millon
-        walletUSDT = await Wallet.findOne({where: {coinId: 9, userId: 27}})
+        walletUSDT = await Wallet.findOne({where: {coinId: 4, userId: 27}})
         walletUSDT.balance = 9999;
         await walletUSDT.save();
 
@@ -66,8 +66,8 @@ describe('CronBuy2: CronBuy a un usuario con suficiente plata modifica el balanc
             method: 'get',
             url: 'http://localhost:5555/cronbuys/run',
         }).then(async function(resolve){
-            walletBTC = await Wallet.findOne({where: {coinId: 6, userId: 27}})
-            walletUSDT = await Wallet.findOne({where: {coinId: 9, userId: 27}})
+            walletBTC = await Wallet.findOne({where: {coinId: 1, userId: 27}})
+            walletUSDT = await Wallet.findOne({where: {coinId: 4, userId: 27}})
 
             await walletBTC.save();
             await walletUSDT.save();
@@ -105,7 +105,7 @@ describe('CronBuy3: CronBuy a un usuario sin suficiente plata no modifica el bal
         });
 
         //obtengo el cronbuy de prueba
-        let cron = await Cronbuy.findOne({ where: {coinId: 6, userId: 27 } } );
+        let cron = await Cronbuy.findOne({ where: {coinId: 1, userId: 27 } } );
 
         //le cambio la fecha para garantizar que se ejecute
         cron.lastPurchaseDate = new Date(2021,5,5);
@@ -113,12 +113,12 @@ describe('CronBuy3: CronBuy a un usuario sin suficiente plata no modifica el bal
         await cron.save();
 
         //agarro la wallet de btc y la seteo en cero
-        walletBTC = await Wallet.findOne({where: {coinId: 6, userId: 27}})
+        walletBTC = await Wallet.findOne({where: {coinId: 1, userId: 27}})
         walletBTC.balance = 0;
         await walletBTC.save();
 
         //agarro la de USDT y la seteo en 0 tambien (para que no pueda realizar la compra por saldo insuficiente)
-        walletUSDT = await Wallet.findOne({where: {coinId: 9, userId: 27}})
+        walletUSDT = await Wallet.findOne({where: {coinId: 4, userId: 27}})
         walletUSDT.balance = 0;
         await walletUSDT.save();
 
@@ -130,8 +130,8 @@ describe('CronBuy3: CronBuy a un usuario sin suficiente plata no modifica el bal
             method: 'get',
             url: 'http://localhost:5555/cronbuys/run',
         }).then(async function(resolve){
-            walletBTC = await Wallet.findOne({where: {coinId: 6, userId: 27}})
-            walletUSDT = await Wallet.findOne({where: {coinId: 9, userId: 27}})
+            walletBTC = await Wallet.findOne({where: {coinId: 1, userId: 27}})
+            walletUSDT = await Wallet.findOne({where: {coinId: 4, userId: 27}})
 
             await walletBTC.save();
             await walletUSDT.save();
@@ -150,3 +150,4 @@ describe('CronBuy3: CronBuy a un usuario sin suficiente plata no modifica el bal
         });
     });
 })
+

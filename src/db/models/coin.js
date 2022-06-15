@@ -5,11 +5,13 @@ const {
 module.exports = (sequelize, DataTypes) => {
     class Coin extends Model {
         static associate(models) {
+          Coin.hasMany(models.Tag);
             
         }
     }
     Coin.init({
         id: {
+            allowNull: false,
             type:DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true

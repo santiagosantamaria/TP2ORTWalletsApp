@@ -32,7 +32,7 @@ const isAdmin = (req,res,next) => {
     }
 }
 
-const { Coin, User, Wallet, Notification, Admin, Cronbuy, Transaction } = require('./src/db/models');
+const { Coin, User, Wallet, Notification, Admin, Cronbuy, Transaction, Tag } = require('./src/db/models');
 const res = require('express/lib/response');
 
 //http://localhost:5555/
@@ -688,6 +688,96 @@ app.get('/cronbuys/run', async function(req,res) {
 
 
 // ---- END CRON BUY -------------------------------
+
+/* ---- BEGIN TAG -------------------------------------------------------- */
+
+app.get('/listtags', async function(req,res) {
+	const tag = await Tag.findAll();
+    return res.send(tag);
+})
+
+app.get('/tags/find/:id', async function(req,res) {
+	const tagId = req.params.id;
+    const tag = await Tag.findByPk(tagId);
+    return res.send(tag);
+})
+
+/* add tag */
+app.post('/tags/new', async function(req,res) {
+    const {name, coinId} = req.body;
+    try {
+        let newTag = await Tag.build({
+            name: name,
+            coinId: coinId,
+          });
+          newTag.save();
+        res.status(201).send('Tag Registrada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
+
+app.put('/tags/update/:id', async function(req,res) {
+    const {name, coinId} = req.body;
+    const tagId = req.params.id;
+    try {
+        await Tag.update({
+            name: name,
+            coinId: coinId,
+          },{
+              where:{ id:tagId }
+            });
+        res.status(201).send('Tag Actualizada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
+
+app.delete('/tags/delete/:id', async function(req,res) {
+    const tagId = req.params.id;
+    try {
+        await Tag.destroy({
+              where:{ id:tagId }
+            });
+        res.status(201).send('Tag eliminada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
+})
+
+app.get('/tagsfrom/coin/:id', async function(req,res) {
+	const _coinId = req.params.id;
+    const coin = await Coin.findByPk(_coinId);
+    const coinName = coin.name;
+
+    const tagsFromCoin = await Tag.findAll({
+        attributes: ["name"],
+        raw:true,
+        where: {coinId:_coinId}
+    });
+
+    const cantTagsForCoin = tagsFromCoin.length
+    //const tagsNames = JSON.stringify(tagsFromCoin);
+
+   let i = 0;
+   let returnTagsAndCoins = ""
+
+   returnTagsAndCoins = coinName;
+
+   while (i < cantTagsForCoin) {
+
+    const nameTagi = tagsFromCoin[i].name;
+    returnTagsAndCoins = returnTagsAndCoins + ",  " + nameTagi;
+    i = i + 1;
+   }
+
+   //console.log(returnTagsAndCoins);
+    return res.send(returnTagsAndCoins);
+})
+
+
+
+// ---- END TAGS -------------------------------
 
 
 app.listen(5555);

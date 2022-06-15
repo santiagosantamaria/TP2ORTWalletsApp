@@ -64,6 +64,16 @@ app.get('/users/find/:id', async function(req,res) {
     return res.send(user);
 })
 
+app.get('/users/findbyemail/:email', async function(req,res) {
+    const email = req.params.email;
+    const user = await User.findOne({ where: { email:email } });
+
+    res.status(201).send(user);
+
+})
+
+
+
 app.get('/users/profile',isAuth, async function(req,res) {
 	const userId = req.session.userId;
     const user = await User.findByPk(userId);
@@ -76,7 +86,7 @@ app.get('/users/profile',isAuth, async function(req,res) {
 })
 
 // sending params via post json
-app.post('/users/register', async function(req,res) {
+app.post('/users', async function(req,res) {
     const { firstName, lastName, email, password } = req.body;
     console.log(email)
     try {
@@ -274,7 +284,7 @@ app.post('/coins/buy', isAuth, async function(req,res) {
 
     let coinToBuy = await Coin.findOne({ where: { ticker: tickerSearch }});
     let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' }});
-    let userIdBuscado = req.session.userId;
+    let userIdBuscado = 1;
 
 
    try {
@@ -296,10 +306,10 @@ app.post('/coins/buy', isAuth, async function(req,res) {
         } else {
            resString = 'No tienes suficiente dinero para comprar ' + quantity + ' ' + tickerSearch;
         }
-       res.status(201).send(resString);
+      res.status(201).send(resString);
 
     } catch(err) {
-       res.status(500).send('No se pudo realizar la operacion');
+        res.status(500).send('No se pudo realizar la operacion');
     }
 
 })
@@ -309,7 +319,7 @@ app.post('/coins/sell', isAuth, async function(req,res) {
 
     let coinToSell = await Coin.findOne({ where: { ticker: tickerSearch }});
     let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' }});
-    let userIdBuscado = req.session.userId;
+    let userIdBuscado = 1;
 
    try {
        const walletUsdt = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinUsdt.id }});
@@ -338,12 +348,12 @@ app.post('/coins/sell', isAuth, async function(req,res) {
 
 })
 
-app.post('/coins/swap', isAuth, async function(req,res) {
+app.post('/coins/swap', async function(req,res) {
     const { tickerSell, tickerBuy, quantity } = req.body;
 
     let coinToSell = await Coin.findOne({ where: { ticker: tickerSell }});
     let coinToBuy = await Coin.findOne({ where: { ticker: tickerBuy }});
-    let userIdBuscado = req.session.userId;
+    let userIdBuscado = 1;
 
    try {
         const walletSell = await Wallet.findOne({ where: { userId:userIdBuscado, coinId:coinToSell.id }});
@@ -401,7 +411,7 @@ app.post('/coins/deposit', isAuth, async function(req,res) {
 app.post('/coins/withdraw', isAuth, async function(req,res) {
     const { adress, ticker, quantity } = req.body;
     let resString = "";
-    let userId = req.session.userId;
+    let userId = 1;
 
    try {
         let withdrawCoin = await Coin.findOne({ where: { ticker: ticker}})
@@ -425,7 +435,7 @@ app.post('/coins/withdraw', isAuth, async function(req,res) {
 //  send coins to a user with email
 app.post('/coins/sendToEmail', isAuth, async function(req,res) {
     const { email, ticker, quantity } = req.body;
-    let userLoggedId = req.session.userId;
+    let userLoggedId = 1;
     
     try {
         
@@ -469,11 +479,10 @@ app.get('/notifications', async function (req,res){
 })
 
 //get user notifications (logged user)
-app.get('/notifications/notificationsfromlogged', isAuth, async function (req,res){
-    const userId = req.session.userId;
+app.get('/notifications/mynotifications', async function (req,res){
+    const userId = 27;
 
     const user = await User.findByPk(userId);
-    console.log("TODAS LAS WALLETS DE ESTE USUARIO " + allWallets)
     const notification = await user.getNotifications();
 
     return res.send(notification)
@@ -483,18 +492,17 @@ app.get('/notifications/notificationsfromlogged', isAuth, async function (req,re
 // sending params via post json
 app.post('/notifications/newnotification', async  function (req, res){
    console.log('METODO NEW NOTIFICATION')
-    const {title, text, userId} = req.body;
-    console.log('TITULO ' + title);
+    const {title, text} = req.body;
+   const userId = 27;
+
     try{
         let user = await User.findOne({ where:{ id:userId }});
-        console.log('USUARIO BUSCADO ' + user.firstName)
+
 
         if(user == null){
             res.status(500).send('No se encontro a un usuario con ese id');
         }else{
             let newNotification = await Notification.create({title: title, text: text, userId:userId, seen: 0}) //COMO LE PASO LA FECHA?
-            console.log(newNotification)
-
 
         }
         res.status(201).send('NOTIFICACION CREADA');
@@ -516,6 +524,40 @@ app.delete('/notifications/delete/:id', async function(req,res) {
     }
 })
 
+//marcar una notificacion como leida
+app.put('/notifications/markasseen/', async function(req,res) {
+    const notificationId = 13;
+
+    try {
+        await Notification.update({
+           seen: 1
+        },{
+            where:{ id:notificationId }
+        });
+        res.status(201).send('Notificacion leida');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
+
+//actualizar una notificacion
+app.put('/notifications', async function(req,res) {
+    const { title, text } = req.body;
+    const notificationId = 1;
+
+    try {
+        await Notification.update({
+           title: title,
+            text: text,
+            seen: 0
+        },{
+            where:{ id:notificationId }
+        });
+        res.status(201).send('Notificacion Actualizada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
 
 //------END NOTIFICATION---------
 
@@ -524,6 +566,61 @@ app.delete('/notifications/delete/:id', async function(req,res) {
 app.get('/transactions', async function (req,res){
     let transactions = await Transaction.findAll();
     return res.send(transactions)
+})
+
+//nueva transaccion (log)
+// sending params via post json
+app.post('/transactions/newtransaction', async  function (req, res){
+
+    const {text} = req.body;
+    const walletId = 5;
+    try{
+        let wallet = await Wallet.findOne({ where: { id:walletId }});
+
+
+        if(wallet == null){
+            res.status(500).send('No se creo la transaccion ya que no existe esa wallet');
+        }else{
+            let newTransaction = await Transaction.create({text: text, walletId:walletId})
+        }
+        res.status(201).send('Transaccion CREADA');
+
+    }catch (err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+})
+
+
+
+//actualizar transaccion (log)
+//actualizar una notificacion
+app.put('/transactions', async function(req,res) {
+    const {text} = req.body;
+    const walletId = 5;
+
+    try {
+        await Transaction.update({
+            text: text,
+        },{
+            where:{ id:walletId }
+        });
+        res.status(201).send('Transaccion Actualizada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
+
+//eliminar transaccion
+app.delete('/transactions/:id', async function(req,res) {
+    const transactionId = req.params.id;
+    try {
+        await Transaction.destroy({
+            where:{ id:transactionId }
+        });
+        res.status(201).send('Transaccion Borrada del sistema');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
 })
 
 
@@ -543,9 +640,9 @@ const getCoinIdByTicker = async function(ticker) {
 // ---- CRON BUYs -------------------------------
 
 // set a cron buy for a user
-app.post('/cronbuys/set', isAuth, async function(req,res) {
+app.post('/cronbuys', async function(req,res) {
     const { ticker, usdAmount, frequency } = req.body;
-    let userId = req.session.userId;
+    let userId = 27;
     try {
         let coin   = await Coin.findOne({ where:{ ticker:ticker }});
         let coinId = coin.id;
@@ -581,8 +678,8 @@ app.post('/cronbuys/set', isAuth, async function(req,res) {
 })
 
 // delete a cron buy for a user
-app.delete('/cronbuys/delete/:ticker', isAuth, async function(req,res) {
-    const userId = req.session.userId;
+app.delete('/cronbuys/:ticker', async function(req,res) {
+    const userId = 27;
     const ticker = req.params.ticker;
     try {
         let coin = await Coin.findOne({ where:{ ticker:ticker }});
@@ -597,9 +694,9 @@ app.delete('/cronbuys/delete/:ticker', isAuth, async function(req,res) {
 })
 
 // modify $usd Amount or frequency (days) for a cron buy
-app.post('/cronbuys/update', isAuth, async function(req,res) {
+app.put('/cronbuys', async function(req,res) {
     const { ticker, usdAmount, frequency } = req.body;
-    let userId = req.session.userId;
+    let userId = 27;
 
     try {
 
@@ -632,14 +729,19 @@ app.post('/cronbuys/update', isAuth, async function(req,res) {
 
 // run the cron buy
 async function runCronBuys() {
+
     const cronBuys = await Cronbuy.findAll();
     let today = moment();
     try{
-        cronBuys.forEach(async (cron) => {
+        for (const cron of cronBuys) {
             let diffDays = today.diff(cron.lastPurchaseDate,'days');
 
+
+           console.log( " -------DIFF DAYS --------" + diffDays)
+            console.log( " -------crons frecuency --------" + cron.frequency)
             if(diffDays >= cron.frequency) {
                 let coinToBuy = await Coin.findByPk(cron.coinId);
+
                 let usdtCoin  = await Coin.findOne({ where: { ticker: 'USDT' }});
 
                 // User USD wallet
@@ -652,7 +754,8 @@ async function runCronBuys() {
                     await usdUserWallet.save();
 
                     // calculo de cantidad de moneda a comprar
-                    let amtBuy = cron.usdAmount / coinToBuy.unitDolarPrice; 
+                    let amtBuy = cron.usdAmount / coinToBuy.unitDolarPrice;
+
 
                     coinUserWallet.balance = coinUserWallet.balance + amtBuy;
                     await coinUserWallet.save();
@@ -663,11 +766,14 @@ async function runCronBuys() {
 
                     // emitir notificacion a usuario // compra recurrente de X coin
                     console.log('User id: ' + cron.userId + ' compro ' + cron.usdAmount + ' de ' + coinToBuy.ticker);
-
+                   await Notification.create({title: "COMPRA RECURRENTE COMPLETADA", text: "COMPRASTE  " + cron.usdAmount  + " de " + coinToBuy.ticker, userId: cron.userId, seen: 0})
+                }else{
+                    console.log("ENTRE AL ELSE")
+                    await Notification.create({title: "COMPRA RECURRENTE FALLIDA", text: "No pudiste comprar  " + coinToBuy.ticker  + " por saldo insuficiente", userId: cron.userId, seen: 0})
                 }
             }
 
-        });
+        }
     } catch(e) {
         console.log(e.error);
         res.status(500).send('Error en Cron Buys');
@@ -682,8 +788,6 @@ app.get('/cronbuys/run', async function(req,res) {
     } catch(e) {
         res.status(501).send('Error en Cron buys');
     }
-
-
 });
 
 

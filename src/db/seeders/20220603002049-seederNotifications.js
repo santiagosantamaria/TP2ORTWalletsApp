@@ -7,7 +7,7 @@ module.exports = {
 
     for (let i = 1; i < 12; i++) {
       await queryInterface.bulkInsert('notifications',[{
-        title: "Noticia " + i,
+        title: "Notificacion " + i,
         text: "Este es el texto de la notificacion " + i,
         seen: 0,
         userId: i,

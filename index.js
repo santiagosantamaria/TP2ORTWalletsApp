@@ -646,6 +646,49 @@ app.get('/tags/find/:id', async function(req,res) {
     return res.send(tag);
 })
 
+/* add tag */
+app.post('/tags/new', async function(req,res) {
+    const {name, coinId} = req.body;
+    try {
+        let newTag = await Tag.build({
+            name: name,
+            coinId: coinId,
+          });
+          newTag.save();
+        res.status(201).send('Tag Registrada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
+
+app.put('/tags/update/:id', async function(req,res) {
+    const {name, coinId} = req.body;
+    const tagId = req.params.id;
+    try {
+        await Tag.update({
+            name: name,
+            coinId: coinId,
+          },{
+              where:{ id:tagId }
+            });
+        res.status(201).send('Tag Actualizada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
+
+app.delete('/tags/delete/:id', async function(req,res) {
+    const tagId = req.params.id;
+    try {
+        await Tag.destroy({
+              where:{ id:tagId }
+            });
+        res.status(201).send('Tag eliminada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
+})
+
 
 // ---- END TAGS -------------------------------
 

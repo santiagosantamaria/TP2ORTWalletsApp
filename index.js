@@ -492,18 +492,17 @@ app.get('/notifications/mynotifications', async function (req,res){
 // sending params via post json
 app.post('/notifications/newnotification', async  function (req, res){
    console.log('METODO NEW NOTIFICATION')
-    const {title, text, userId} = req.body;
-    console.log('TITULO ' + title);
+    const {title, text} = req.body;
+   const userId = 27;
+
     try{
         let user = await User.findOne({ where:{ id:userId }});
-        console.log('USUARIO BUSCADO ' + user.firstName)
+
 
         if(user == null){
             res.status(500).send('No se encontro a un usuario con ese id');
         }else{
             let newNotification = await Notification.create({title: title, text: text, userId:userId, seen: 0}) //COMO LE PASO LA FECHA?
-            console.log(newNotification)
-
 
         }
         res.status(201).send('NOTIFICACION CREADA');
@@ -570,12 +569,60 @@ app.get('/transactions', async function (req,res){
 })
 
 //nueva transaccion (log)
+// sending params via post json
+app.post('/transactions/newtransaction', async  function (req, res){
+
+    const {text} = req.body;
+    const walletId = 5;
+    try{
+        let wallet = await Wallet.findOne({ where: { id:walletId }});
+
+
+        if(wallet == null){
+            res.status(500).send('No se creo la transaccion ya que no existe esa wallet');
+        }else{
+            let newTransaction = await Transaction.create({text: text, walletId:walletId})
+        }
+        res.status(201).send('Transaccion CREADA');
+
+    }catch (err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+})
+
 
 
 //actualizar transaccion (log)
+//actualizar una notificacion
+app.put('/transactions', async function(req,res) {
+    const {text} = req.body;
+    const walletId = 5;
 
+    try {
+        await Transaction.update({
+            text: text,
+        },{
+            where:{ id:walletId }
+        });
+        res.status(201).send('Transaccion Actualizada');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion')
+    }
+})
 
 //eliminar transaccion
+app.delete('/transactions/:id', async function(req,res) {
+    const transactionId = req.params.id;
+    try {
+        await Transaction.destroy({
+            where:{ id:transactionId }
+        });
+        res.status(201).send('Transaccion Borrada del sistema');
+    } catch(err) {
+        res.status(500).send('No se pudo realizar la operacion');
+    }
+})
+
 
 
 //---------------------------------------END TRANSACTIONS-----------------------------------

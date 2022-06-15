@@ -72,10 +72,8 @@ app.get('/users/findbyemail/:email', async function(req,res) {
 
 })
 
-
-
-app.get('/users/profile',isAuth, async function(req,res) {
-	const userId = req.session.userId;
+app.get('/users/profile', async function(req,res) {
+	const userId = 1;
     const user = await User.findByPk(userId);
     const viewData = {
         "Full Name": user.firstName + ' ' + user.lastName,
@@ -197,8 +195,8 @@ app.post('/users/logout', async function(req,res) {
 })
 
 /*list user wallets*/
-app.get('/listUserWallets', isAuth, async function(req,res) {
-	const userId = req.session.userId;
+app.get('/listUserWallets', async function(req,res) {
+	const userId = 1;
 
     const wallets = await Wallet.findAll({
             where:{
@@ -279,7 +277,7 @@ app.delete('/wallets/delete/:id', isAdmin, async function(req,res) {
 
 /* ---- BEGIN COINS --------------------------------------------------------*/
 
-app.post('/coins/buy', isAuth, async function(req,res) {
+app.post('/coins/buy', async function(req,res) {
     const { tickerSearch, quantity } = req.body;
 
     let coinToBuy = await Coin.findOne({ where: { ticker: tickerSearch }});
@@ -314,7 +312,7 @@ app.post('/coins/buy', isAuth, async function(req,res) {
 
 })
 
-app.post('/coins/sell', isAuth, async function(req,res) {
+app.post('/coins/sell', async function(req,res) {
     const { tickerSearch, quantity } = req.body;
 
     let coinToSell = await Coin.findOne({ where: { ticker: tickerSearch }});
@@ -383,7 +381,7 @@ app.post('/coins/swap', async function(req,res) {
 
 })
 
-app.post('/coins/deposit', isAuth, async function(req,res) {
+app.post('/coins/deposit', async function(req,res) {
     const { adress, quantity } = req.body;
     let resString = "";
     
@@ -408,7 +406,7 @@ app.post('/coins/deposit', isAuth, async function(req,res) {
 
 })
 
-app.post('/coins/withdraw', isAuth, async function(req,res) {
+app.post('/coins/withdraw', async function(req,res) {
     const { adress, ticker, quantity } = req.body;
     let resString = "";
     let userId = 1;
@@ -433,7 +431,7 @@ app.post('/coins/withdraw', isAuth, async function(req,res) {
 })
 
 //  send coins to a user with email
-app.post('/coins/sendToEmail', isAuth, async function(req,res) {
+app.post('/coins/sendToEmail', async function(req,res) {
     const { email, ticker, quantity } = req.body;
     let userLoggedId = 1;
     

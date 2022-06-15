@@ -218,6 +218,21 @@ app.get('/getonewallet/:id', async function(req,res) {
     return res.send(wallet);
 })
 
+// get wallet balance by id
+
+app.get('/walletgetbalance/:id', async function(req,res) {
+    let id = req.params.id;
+    let walletBalance1;
+    
+    await Wallet.findByPk(id).then(async function(wallet, walletBalance1) {    
+        walletBalance1 = await wallet.getDataValue('balance');
+        console.log(wallet.getDataValue('balance')); // ESTO LO AGARRA PERO AFUERA NO
+    });
+    
+    console.log(walletBalance1);
+    return res.send(walletBalance1);
+})
+
 /* add wallet */
 app.post('/wallets/new', async function(req,res) {
     const { coinId, userId, balance, adress } = req.body;
@@ -269,7 +284,7 @@ app.delete('/wallets/delete/:id', isAdmin, async function(req,res) {
 
 /* ---- BEGIN COINS --------------------------------------------------------*/
 
-app.post('/coins/buy', isAuth, async function(req,res) {
+app.post('/coins/buy', async function(req,res) {
     const { tickerSearch, quantity } = req.body;
 
     let coinToBuy = await Coin.findOne({ where: { ticker: tickerSearch }});
@@ -304,7 +319,7 @@ app.post('/coins/buy', isAuth, async function(req,res) {
 
 })
 
-app.post('/coins/sell', isAuth, async function(req,res) {
+app.post('/coins/sell', async function(req,res) {
     const { tickerSearch, quantity } = req.body;
 
     let coinToSell = await Coin.findOne({ where: { ticker: tickerSearch }});

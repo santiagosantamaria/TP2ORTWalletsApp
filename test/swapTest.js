@@ -3,7 +3,7 @@ const { use } = require('chai');
 const chai = require('chai');
 const { DESCRIBE } = require('sequelize');
 const { assert } = chai;
-const { Coin, User, Wallet, Notification, Admin, Cronbuy, Transaction } = require('../src/db/models');
+const { Coin, User, Wallet} = require('../src/db/models');
 
  /* 
 describe('Swap ', function () {
@@ -15,9 +15,55 @@ describe('Swap ', function () {
 });
 */
 
+describe('Swap 1 BTC por 12 ETH', function () {
+    before('Comprando 1 btc', async () => {
+        await axios({
+            method: 'post',
+            url: 'http://localhost:5555/coins/buy',
+            data: {
+                "tickerSearch": "BTC", 
+                "quantity": 1
+                },
+        });
+
+        let walletBalanceBtc = await axios({ //user 1 btc 
+            method: 'get',
+            url: 'http://localhost:5555/walletgetbalance/9',
+        });
+
+
+        let walletBalanceEth = await axios({ // user 1 eth
+            method: 'get',
+            url: 'http://localhost:5555/walletgetbalance/2',
+        });
+
+        
+        //console.log(balanceWalletBtc);
+    });
+    
+    it('Hago el swap', function (done) {
+        axios({
+            method: 'post',
+            url: 'http://localhost:5555/coins/swap',
+            data: {
+                "tickerSell": "BTC", 
+                "tickerBuy": "ETH", 
+                "quantity": 1
+            },
+        }).then(res => {
+            assert.equal(res.status,201);
+            done();
+        });
+        
+    });
+});
+
+
+/*
 describe('Swap', function () {
     it('Swap 1 BTC por 12 ETH', async function () {
 
+     
         let sellOk = false;
         let buyOk = false;
 
@@ -65,7 +111,7 @@ describe('Swap', function () {
 
     });
 })
-/*
+
 describe('Swap', function () {
     it('Swap 1 BTC por 12 ETH RES STATUS 201', async function () {
 

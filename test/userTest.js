@@ -4,7 +4,7 @@ const chai = require('chai');
 const { DESCRIBE } = require('sequelize');
 const { assert } = chai;
 
-  
+/*  
 describe('Users in DB', function () {
     it('Users Have to be 12', async function () {
         const users = await axios.get('http://localhost:5555/users/all');
@@ -28,4 +28,4 @@ describe('User Insertion in DB', function () {
         });
         assert.equal(res.status,201);
     });
-});
+});*/

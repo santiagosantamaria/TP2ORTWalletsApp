@@ -61,7 +61,7 @@ describe('CronBuy2: CronBuy a un usuario con suficiente plata modifica el balanc
     });
 
     //ejecuto las cronbuy
-    it('Cronbuy3: ejecutar cronbuy',  function (done) {
+    it('Cronbuy2: ejecutar cronbuy',  function (done) {
         axios({
             method: 'get',
             url: 'http://localhost:5555/cronbuys/run',

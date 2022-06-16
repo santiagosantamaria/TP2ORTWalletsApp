@@ -144,7 +144,7 @@ app.post('/users/logout', async function(req,res) {
 })
 
 /*list user wallets*/
-app.get('/listUserWallets', async function(req,res) {
+app.get('/users/getwallets', async function(req,res) {
 	const userId = 1;
 
     const wallets = await Wallet.findAll({

@@ -760,7 +760,7 @@ app.get('/listtags', async function(req,res) {
 app.get('/tags/find/:id', async function(req,res) {
 	const tagId = req.params.id;
     const tag = await Tag.findByPk(tagId);
-    return res.send(tag);
+    return res.status(201).send(tag);
 })
 
 /* add tag */
@@ -833,7 +833,7 @@ app.get('/tagsfrom/coin/:id', async function(req,res) {
    }
 
    //console.log(returnTagsAndCoins);
-    return res.send(returnTagsAndCoins);
+    return res.status(201).send(returnTagsAndCoins);
 })
 
 

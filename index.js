@@ -443,7 +443,7 @@ app.get('/notifications', async function (req,res){
 })
 
 //get user notifications (logged user)
-app.get('/notifications/notificationsfromlogged', async function (req,res){
+app.get('/notifications/mynotifications', async function (req,res){
     const userId = 1;
 
     const user = await User.findByPk(userId);
@@ -454,7 +454,7 @@ app.get('/notifications/notificationsfromlogged', async function (req,res){
 
 //new notification
 // sending params via post json
-app.post('/notifications/newnotification', async  function (req, res){
+app.post('/notifications', async  function (req, res){
    console.log('METODO NEW NOTIFICATION')
     const {title, text} = req.body;
    const userId = 27;
@@ -476,7 +476,7 @@ app.post('/notifications/newnotification', async  function (req, res){
     }
 })
 
-app.delete('/notifications/delete/:id', async function(req,res) {
+app.delete('/notifications/:id', async function(req,res) {
     const notificationId = req.params.id;
     try {
         await Notification.destroy({
@@ -534,7 +534,7 @@ app.get('/transactions', async function (req,res){
 
 //nueva transaccion (log)
 // sending params via post json
-app.post('/transactions/newtransaction', async  function (req, res){
+app.post('/transactions', async  function (req, res){
 
     const {text} = req.body;
     const walletId = 5;

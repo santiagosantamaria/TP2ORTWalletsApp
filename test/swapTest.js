@@ -16,6 +16,75 @@ describe('Swap ', function () {
 */
 
 describe('Swap', function () {
+
+    let walletSell;
+    let walletBuy;
+    let balancePreSell;
+    let balancePreBuy; 
+
+    
+    before('setup del swap 1 btc por 12 eth', async () => {  
+
+        walletSell = await Wallet.findOne({ where: { userId:1, coinId:1}});
+        walletBuy = await Wallet.findOne({ where: { userId:1, coinId:2}});
+
+        balancePreSell = walletSell.balance;
+        balancePreBuy = walletBuy.balance;
+
+
+    });
+    
+    it('Swap 1 BTC por 12 ETH', function (done) {
+
+        let res = axios({   
+            method: 'post',
+            url: 'http://localhost:5555/coins/swap',
+            data: {
+                "tickerSell": "BTC", 
+                "tickerBuy": "ETH", 
+                "quantity": 1 
+            },
+        }).then(async function(resolve){
+
+        let expectedResultETH = balancePreBuy + 12;
+        let waletResultETH = await Wallet.findOne({ where: { userId:1, coinId:2 }});
+        let result = await waletResultETH.balance; 
+
+        assert.equal(result, expectedResultETH, "test swap");
+        done();
+
+        });
+        
+    });
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+describe('Swap', function () {
     it('Swap 1 BTC por 12 ETH', async function () {
 
         let sellOk = false;
@@ -65,7 +134,7 @@ describe('Swap', function () {
 
     });
 })
-/*
+
 describe('Swap', function () {
     it('Swap 1 BTC por 12 ETH RES STATUS 201', async function () {
 

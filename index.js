@@ -19,13 +19,6 @@ app.get('/', function (req,res) {
 })
 
 
-// get user wallets
-
-app.get('/listcoins', async function(req,res) {
-	const coins = await Coin.findAll();
-    return res.send(coins);
-})
-
 
 /* ---- BEGIN USERS -------------------------------------------------------- */
 

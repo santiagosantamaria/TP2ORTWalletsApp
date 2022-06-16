@@ -22,6 +22,7 @@ describe('Tag Insertion in DB', function () {
             method: 'get',
             url: 'http://localhost:5555/tags/find/24',
         }).then(res => {
+            console.log("------------------------------"  + res.data.id)
             assert.equal(res.status,201);
             done();
         });

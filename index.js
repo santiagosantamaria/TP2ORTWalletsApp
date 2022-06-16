@@ -560,13 +560,13 @@ app.post('/transactions', async  function (req, res){
 //actualizar una notificacion
 app.put('/transactions', async function(req,res) {
     const {text} = req.body;
-    const walletId = 5;
+    const transactionId = 2;
 
     try {
         await Transaction.update({
             text: text,
         },{
-            where:{ id:walletId }
+            where:{ id:transactionId }
         });
         res.status(201).send('Transaccion Actualizada');
     } catch(err) {

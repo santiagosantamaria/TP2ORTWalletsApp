@@ -28,6 +28,9 @@ describe('Swap', function () {
         walletSell = await Wallet.findOne({ where: { userId:1, coinId:1}});
         walletBuy = await Wallet.findOne({ where: { userId:1, coinId:2}});
 
+        walletSell.balance = 1;
+        await walletSell.save();
+
         balancePreSell = walletSell.balance;
         balancePreBuy = walletBuy.balance;
 

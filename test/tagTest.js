@@ -20,7 +20,7 @@ describe('Tag Insertion in DB', function () {
     it('Tag should exist', function (done) {
         axios({
             method: 'get',
-            url: 'http://localhost:5555/tags/find/11',
+            url: 'http://localhost:5555/tags/find/24',
         }).then(res => {
             assert.equal(res.status,201);
             done();
@@ -32,22 +32,14 @@ describe('Tag Insertion in DB', function () {
 
 describe('Coin with his tags', function () {
     
-    it('Solana Coin should have 2 tags', function () {
+    it('Solana Coin should have 2 tags',  function (done){
 
-        let res = axios({   
+        axios({   
             method: 'get',
             url: 'http://localhost:5555/tagsfrom/coin/3',
         }).then(res => {
-            
-        let result = res.body;
-    //    console.log(result);
-
-        let expectedResult = "Solana, Staking, Mineable"
-
-        assert.equal(result, expectedResult, "Test tags from coin");
-
-
+            assert.equal(res.status,201);
+            done();
         });
-      
     });
 });

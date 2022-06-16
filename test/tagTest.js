@@ -20,7 +20,7 @@ describe('Tag Insertion in DB', function () {
     it('Tag should exist', function (done) {
         axios({
             method: 'get',
-            url: 'http://localhost:5555/tags/find/24',
+            url: 'http://localhost:5555/tags/find/1',
         }).then(res => {
             assert.equal(res.status,201);
             done();

@@ -760,7 +760,11 @@ app.get('/listtags', async function(req,res) {
 app.get('/tags/find/:id', async function(req,res) {
 	const tagId = req.params.id;
     const tag = await Tag.findByPk(tagId);
-    return res.status(201).send(tag);
+    if (tag != null) {
+        return res.status(201).send(tag);
+    } else {
+        return res.status(501)
+    }
 })
 
 /* add tag */

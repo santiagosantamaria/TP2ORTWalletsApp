@@ -113,6 +113,8 @@ app.delete('/users/:id', async function(req,res) {
     try {
         await User.destroy({
               where:{ id:userId }
+            }).then(async function(){
+                await Wallet.destroy({ where: { userId: userId }})
             });
         res.status(201).send('Usuario Borrado');
     } catch(err) {

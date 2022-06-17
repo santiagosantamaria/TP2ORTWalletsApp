@@ -23,21 +23,37 @@ app.get('/', function (req,res) {
 /* ---- BEGIN USERS -------------------------------------------------------- */
 
 app.get('/users', async function(req,res) {
-	const users = await User.findAll();
-    return res.send(users);
+    try{
+        const users = await User.findAll();
+        return res.status(201).send(users);
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
 })
 
 app.get('/users/:id', async function(req,res) {
-	const userId = 1;
-    const user = await User.findByPk(userId);
-    return res.send(user);
+    try{
+        const userId = 1;
+        const user = await User.findByPk(userId);
+        return res.status(201).send(user);
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+
 })
 
 app.get('/users/findbyemail/:email', async function(req,res) {
-    const email = req.params.email;
-    const user = await User.findOne({ where: { email:email } });
 
-    res.status(201).send(user);
+    try{
+        const email = req.params.email;
+        const user = await User.findOne({ where: { email:email } });
+
+        res.status(201).send(user);
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+
+
 
 })
 
@@ -145,14 +161,20 @@ app.post('/users/logout', async function(req,res) {
 
 /*list user wallets*/
 app.get('/users/getwallets', async function(req,res) {
-	const userId = 1;
 
-    const wallets = await Wallet.findAll({
+    try{
+        const userId = 1;
+
+        const wallets = await Wallet.findAll({
             where:{
                 userId:userId
             }
-    });
-    return res.send(wallets);
+        });
+        return res.status(201).send(wallets);
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+
 })
 
 
@@ -164,19 +186,32 @@ app.get('/users/getwallets', async function(req,res) {
 // get user wallets
 app.get('/wallets', async function(req,res) {
 
-    const userId = 1;
-    const user = await User.findByPk(userId);
-    const wallet = await user.getWallets();
-    res.status(201).send(wallet);
+    try{
+        const userId = 1;
+        const user = await User.findByPk(userId);
+        const wallet = await user.getWallets();
+        res.status(201).send(wallet);
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+
 
 })
 
 app.get('/wallets/findbyemail/:email', async function(req,res) {
-    const email = req.params.email;
-    const user = await User.findOne({ where: { email:email } });
+    try{
+        const email = req.params.email;
+        const user = await User.findOne({ where: { email:email } });
 
-    const wallet = await user.getWallets();
-    res.status(201).send(wallet);
+        if(user != null){
+            const wallet = await user.getWallets();
+            res.status(201).send(wallet);
+        }
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+
+
 
 })
 // add a wallet
@@ -234,8 +269,14 @@ app.delete('/wallets', async function(req,res) {
 
 
 app.get('/coins', async function(req,res) {
-	const coins = await Coin.findAll();
-    return res.send(coins);
+    try{
+        const coins = await Coin.findAll();
+        return res.send(coins);
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+
+
 })
 
 app.post('/coins/buy', async function(req,res) {
@@ -433,18 +474,31 @@ app.post('/coins/sendToEmail', async function(req,res) {
 
 //LIST ALL NOTIFICATIONS
 app.get('/notifications', async function (req,res){
-    let notifications = await Notification.findAll()
-    return res.send(notifications)
+    try{
+        let notifications = await Notification.findAll()
+        return res.send(notifications)
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+
+
 })
 
 //get user notifications (logged user)
 app.get('/notifications/mynotifications', async function (req,res){
     const userId = 1;
 
-    const user = await User.findByPk(userId);
-    const notification = await user.getNotifications();
+    try{
+        const user = await User.findByPk(userId);
+        const notification = await user.getNotifications();
 
-    return res.send(notification)
+        return res.send(notification)
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+
+
+
 })
 
 //new notification
@@ -523,8 +577,13 @@ app.put('/notifications', async function(req,res) {
 //---------------------------------------BEGIN TRANSACTIONS---------------------------------
 //LIST ALL TRANSACTIONS
 app.get('/transactions', async function (req,res){
-    let transactions = await Transaction.findAll();
-    return res.send(transactions)
+    try{
+        let transactions = await Transaction.findAll();
+        return res.send(transactions)
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+
 })
 
 //nueva transaccion (log)

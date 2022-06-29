@@ -30,7 +30,7 @@ describe('Tag Insertion in DB', function() {
     });
 });
 
-describe('Coin with his tags', function() {
+describe('Coin with tags', function() {
     it('Solana Coin should have 2 tags', function(done) {
         axios({
             method: 'get',

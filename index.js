@@ -6,8 +6,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // accept json in post request
 app.use(express.json());
-const res = require('express/lib/response');
-
 
 // User Routes
 const userRouter = require("./src/routes/userRoutes");

@@ -1,4 +1,4 @@
-const { User, Coin, Wallet, Notification, Cronbuy, Transaction, Tag } = require('../db/models');
+const { User, Notification } = require('../db/models');
 
 exports.getAll = async function(req, res) {
     try {

@@ -195,3 +195,8 @@ exports.sendToEmail = async function(req, res) {
     }
 
 };
+
+exports.getCoinIdByTicker = async function(ticker) {
+    let coinSearchedByTicker = await Coin.findOne({ where: { ticker: ticker } });
+    return coinSearchedByTicker.id;
+}

@@ -8,9 +8,4 @@ router.post('/wallets', walletController.addWalletForUser);
 router.put('/wallets', walletController.editWallet);
 router.delete('/wallets/:id', walletController.deleteWallet);
 
-
-
-
-
-
 module.exports = router;

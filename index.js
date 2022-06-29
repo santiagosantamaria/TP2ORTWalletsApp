@@ -12,14 +12,14 @@ const { Coin, Wallet, Notification, Admin, Cronbuy, Transaction, Tag } = require
 
 //http://localhost:5555/
 
-//rutas
+//rutas 
 app.get('/', function(req, res) {
     res.send('hola')
 })
 
 // User Routes
 const userRouter = require("./src/routes/userRoutes");
-app.get('/users', userRouter)
+app.get('/users', userRouter);
 app.get("/users/:id", userRouter);
 app.get("/users/findbyemail/:email", userRouter);
 app.post('/users', userRouter);
@@ -30,324 +30,33 @@ app.post('/users/logout', userRouter);
 app.get('/users/getwallets', userRouter);
 
 // Wallet Routes
-const walletRouter = require("./src/routes/walletRoutes");
+const walletRouter = require('./src/routes/walletRoutes');
 app.get('/wallets', walletRouter);
 app.get('/wallets/findbyemail/:email', walletRouter);
 app.post('/wallets', walletRouter);
 app.put('/wallets', walletRouter);
 app.delete('/wallets/:id', walletRouter);
 
+// Coin Routes
+const coinRouter = require('./src/routes/coinRoutes');
+app.get('/coins', coinRouter);
+app.post('/coins/buy', coinRouter);
+app.post('/coins/sell', coinRouter);
+app.post('/coins/swap', coinRouter);
+app.post('/coins/deposit', coinRouter);
+app.post('/coins/withdraw', coinRouter);
+app.post('/coins/sendToEmail', coinRouter);
+
+// Notification Routes
+const notificationRouter = require('./src/routes/notificationRoutes');
+app.get('/notifications', notificationRouter);
+app.get('/notifications/mynotifications', notificationRouter);
+app.post('/notifications', notificationRouter);
+app.delete('/notifications/:id', notificationRouter);
+app.put('/notifications/markasseen/', notificationRouter);
+app.put('/notifications', notificationRouter);
 
-/* ---- BEGIN COINS --------------------------------------------------------*/
 
-
-app.get('/coins', async function(req, res) {
-    try {
-        const coins = await Coin.findAll();
-        return res.send(coins);
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion' + err);
-    }
-
-
-})
-
-app.post('/coins/buy', async function(req, res) {
-    const { tickerSearch, quantity } = req.body;
-
-    let coinToBuy = await Coin.findOne({ where: { ticker: tickerSearch } });
-    let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' } });
-    let userIdBuscado = 1;
-
-
-    try {
-        const walletUsdt = await Wallet.findOne({ where: { userId: userIdBuscado, coinId: coinUsdt.id } });
-        const walletCoin = await Wallet.findOne({ where: { userId: userIdBuscado, coinId: coinToBuy.id } });
-
-        let netPrice = coinToBuy.unitDolarPrice * quantity;
-        let resString = "";
-
-        if (walletUsdt.balance >= netPrice) {
-
-            walletUsdt.balance = walletUsdt.balance - netPrice;
-            await walletUsdt.save();
-
-            walletCoin.balance = walletCoin.balance + quantity;
-            await walletCoin.save();
-
-            resString = 'Compraste ' + quantity + ' ' + tickerSearch;
-        } else {
-            resString = 'No tienes suficiente dinero para comprar ' + quantity + ' ' + tickerSearch;
-        }
-        res.status(201).send(resString);
-
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion');
-    }
-
-})
-
-app.post('/coins/sell', async function(req, res) {
-    const { tickerSearch, quantity } = req.body;
-
-    let coinToSell = await Coin.findOne({ where: { ticker: tickerSearch } });
-    let coinUsdt = await Coin.findOne({ where: { ticker: 'USDT' } });
-    let userIdBuscado = 1;
-
-    try {
-        const walletUsdt = await Wallet.findOne({ where: { userId: userIdBuscado, coinId: coinUsdt.id } });
-        const walletCoin = await Wallet.findOne({ where: { userId: userIdBuscado, coinId: coinToSell.id } });
-
-        let netPay = coinToSell.unitDolarPrice * quantity;
-        let resString = "";
-
-        if (walletCoin.balance >= quantity) {
-
-            walletUsdt.balance = walletUsdt.balance + netPay;
-            await walletUsdt.save();
-
-            walletCoin.balance = walletCoin.balance - quantity;
-            await walletCoin.save();
-
-            resString = 'Vendiste ' + quantity + ' ' + tickerSearch + ' por ' + netPay + ' USDT';
-        } else {
-            resString = 'No tienes esa cantidad de ' + tickerSearch;
-        }
-        res.status(201).send(resString);
-
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion');
-    }
-
-})
-
-app.post('/coins/swap', async function(req, res) {
-    const { tickerSell, tickerBuy, quantity } = req.body;
-
-    let coinToSell = await Coin.findOne({ where: { ticker: tickerSell } });
-    let coinToBuy = await Coin.findOne({ where: { ticker: tickerBuy } });
-    let userIdBuscado = 1;
-
-    try {
-        const walletSell = await Wallet.findOne({ where: { userId: userIdBuscado, coinId: coinToSell.id } });
-        const walletBuy = await Wallet.findOne({ where: { userId: userIdBuscado, coinId: coinToBuy.id } });
-        let resString = "";
-
-
-        if (walletSell.balance >= quantity) {
-
-            let netUsdt = quantity * coinToSell.unitDolarPrice;
-            walletSell.balance = walletSell.balance - quantity;
-            let quantityCoin = netUsdt / coinToBuy.unitDolarPrice;
-            walletBuy.balance = walletBuy.balance + quantityCoin;
-
-            await walletSell.save();
-            await walletBuy.save();
-
-            resString = 'Vendiste ' + quantity + ' ' + tickerSell + ' por ' + quantityCoin + tickerBuy;
-        } else {
-            resString = 'No tienes esa cantidad de ' + tickerSell;
-        }
-        res.status(201).send(resString);
-
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion');
-    }
-
-})
-
-app.post('/coins/deposit', async function(req, res) {
-    const { adress, quantity } = req.body;
-    let resString = "";
-
-    try {
-        let depositWallet = await Wallet.findOne({ where: { adress: adress } });
-
-        if (depositWallet != null) {
-            let depositCoin = await Coin.findOne({ where: { id: depositWallet.coinId } })
-
-            depositWallet.balance += quantity;
-            await depositWallet.save();
-
-            resString = 'Depositaste ' + quantity + ' ' + depositCoin.ticker;
-        } else {
-            resString = 'No existe la wallet';
-        }
-
-        res.status(201).send(resString);
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion');
-    }
-
-})
-
-app.post('/coins/withdraw', async function(req, res) {
-    const { adress, ticker, quantity } = req.body;
-    let resString = "";
-    let userId = 1;
-
-    try {
-        let withdrawCoin = await Coin.findOne({ where: { ticker: ticker } })
-        let withdrawWallet = await Wallet.findOne({ where: { coinId: withdrawCoin.id, userId: userId } });
-
-        if (withdrawWallet != null && withdrawWallet.balance >= quantity) {
-            withdrawWallet.balance -= quantity;
-            await withdrawWallet.save();
-            resString = 'Retiraste ' + quantity + ' ' + ticker + " a la direccion " + adress + ". Balance: " + withdrawWallet.balance;
-        } else {
-            resString = 'No tienes esa cantidad de ' + ticker;
-        }
-
-        res.status(201).send(resString);
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion');
-    }
-
-})
-
-//  send coins to a user with email
-app.post('/coins/sendToEmail', async function(req, res) {
-    const { email, ticker, quantity } = req.body;
-    let userLoggedId = 1;
-
-    try {
-
-        let coin = await Coin.findOne({ where: { ticker: ticker } });
-        let withdrawWallet = await Wallet.findOne({ where: { coinId: coin.id, userId: userLoggedId } });
-
-        let userToSend = await User.findOne({ where: { email: email } });
-        let userToSendWallet = await Wallet.findOne({ where: { coinId: coin.id, userId: userToSend.id } });
-
-        if (withdrawWallet.balance >= quantity && userToSend != null) {
-
-            withdrawWallet.balance = withdrawWallet.balance - quantity;
-            userToSendWallet.balance = userToSendWallet.balance + quantity;
-
-            await withdrawWallet.save();
-            await userToSendWallet.save();
-
-            var resString = 'Enviaste ' + quantity + ' ' + ticker + " a " + email + ". Balance: " + withdrawWallet.balance;
-
-        } else {
-            res.status(201).send("No se pudo realizar la operacion");
-        }
-
-        res.status(201).send(resString);
-
-    } catch (err) {
-        res.status(500).send(err.error);
-    }
-
-})
-
-
-//END COINS
-
-//------BEGIN NOTIFICATION ------
-
-//LIST ALL NOTIFICATIONS
-app.get('/notifications', async function(req, res) {
-    try {
-        let notifications = await Notification.findAll()
-        return res.send(notifications)
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion' + err);
-    }
-
-
-})
-
-//get user notifications (logged user)
-app.get('/notifications/mynotifications', async function(req, res) {
-    const userId = 1;
-
-    try {
-        const user = await User.findByPk(userId);
-        const notification = await user.getNotifications();
-
-        return res.send(notification)
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion' + err);
-    }
-
-
-
-})
-
-//new notification
-// sending params via post json
-app.post('/notifications', async function(req, res) {
-    console.log('METODO NEW NOTIFICATION')
-    const { title, text } = req.body;
-    const userId = 27;
-
-    try {
-        let user = await User.findOne({ where: { id: userId } });
-
-
-        if (user == null) {
-            res.status(500).send('No se encontro a un usuario con ese id');
-        } else {
-            let newNotification = await Notification.create({ title: title, text: text, userId: userId, seen: 0 }) //COMO LE PASO LA FECHA?
-
-        }
-        res.status(201).send('NOTIFICACION CREADA');
-
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion' + err);
-    }
-})
-
-app.delete('/notifications/:id', async function(req, res) {
-    const notificationId = req.params.id;
-    try {
-        await Notification.destroy({
-            where: { id: notificationId }
-        });
-        res.status(201).send('Notificacion Borrada del sistema');
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion');
-    }
-})
-
-//marcar una notificacion como leida
-app.put('/notifications/markasseen/', async function(req, res) {
-    const notificationId = 13;
-
-    try {
-        await Notification.update({
-            seen: 1
-        }, {
-            where: { id: notificationId }
-        });
-        res.status(201).send('Notificacion leida');
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion')
-    }
-})
-
-//actualizar una notificacion
-app.put('/notifications', async function(req, res) {
-    const { title, text } = req.body;
-    const notificationId = 1;
-
-    try {
-        await Notification.update({
-            title: title,
-            text: text,
-            seen: 0
-        }, {
-            where: { id: notificationId }
-        });
-        res.status(201).send('Notificacion Actualizada');
-    } catch (err) {
-        res.status(500).send('No se pudo realizar la operacion')
-    }
-})
-
-//------END NOTIFICATION---------
-
-//---------------------------------------BEGIN TRANSACTIONS---------------------------------
 //LIST ALL TRANSACTIONS
 app.get('/transactions', async function(req, res) {
     try {

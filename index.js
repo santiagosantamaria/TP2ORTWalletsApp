@@ -8,14 +8,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 const res = require('express/lib/response');
 
-const { Coin, Wallet, Notification, Admin, Cronbuy, Transaction, Tag } = require('./src/db/models');
-
-//http://localhost:5555/
-
-//rutas 
-app.get('/', function(req, res) {
-    res.send('hola')
-})
 
 // User Routes
 const userRouter = require("./src/routes/userRoutes");
